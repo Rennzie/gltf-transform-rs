@@ -1,8 +1,8 @@
 
 <h1 align="center">
-   gltf
+   gltf-transform-rs
 </h1>
-<p align="center">
+<!-- <p align="center">
    <a href="https://travis-ci.org/gltf-rs/gltf">
       <img src="https://travis-ci.org/gltf-rs/gltf.svg?branch=master" alt="travis">
    </a>
@@ -12,11 +12,17 @@
    <a href="https://docs.rs/gltf">
       <img src="https://docs.rs/gltf/badge.svg" alt="docs.rs">
    </a>
-</p>
+</p> -->
 
 ---
+This crate is a fork of the [gltf](https://github.com/gltf-rs/gltf) crate with the intention of modifying it for the purposes of transforming and exporting [glTF 2.0](https://www.khronos.org/gltf) files. It's inspired by the [gltf-transform](https://gltf-transform.donmccurdy.com/) Typescript library by [Don McCurdy](https://www.donmccurdy.com/).
 
-This crate is intended to load [glTF 2.0](https://www.khronos.org/gltf), a file format designed for the efficient transmission of 3D assets.
+## Aims/Todo
+
+- [ ] Safe mutation of Accessor buffers
+- [ ] Ergonomic export
+- [ ] Fast concurrent traversal of glTF document
+
 
 `rustc` version 1.32 or above is required.
 
