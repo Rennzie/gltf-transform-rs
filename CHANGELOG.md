@@ -8,6 +8,16 @@ The `gltf` crate adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Helpers for exporting GLTF and GLB files from Document and data blobs
+
+---
+> Crate forked from gltf and semver reset **2023-03**
+---
+
+## [1.1.0]
+
 - Fix relative file path imports with url encoded characters.
 - Update dependency on `image` crate from 0.23 to 0.24.
 - Fix bounds calculation in export example.
