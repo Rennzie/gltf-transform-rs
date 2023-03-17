@@ -12,8 +12,8 @@ license = "MIT OR Apache-2.0"
 include = ["**/*.rs", "Cargo.toml", "LICENSE-*"]
 edition = "2018"
 
-[badges]
-travis-ci = { repository = "gltf-rs/gltf" }
+# [badges]
+# travis-ci = { repository = "gltf-rs/gltf" }
 
 [dev-dependencies]
 approx = "0.5"

@@ -1,3 +1,4 @@
+use gltf_transform_rs as gltf;
 use std::boxed::Box;
 use std::error::Error as StdError;
 use std::{fs, io};
@@ -18,7 +19,7 @@ fn print_tree(node: &gltf::Node, depth: i32) {
 }
 
 fn run(path: &str) -> Result<(), Box<dyn StdError>> {
-    let file = fs::File::open(&path)?;
+    let file = fs::File::open(path)?;
     let reader = io::BufReader::new(file);
     let gltf = gltf::Gltf::from_reader(reader)?;
     for scene in gltf.scenes() {

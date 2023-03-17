@@ -1,5 +1,6 @@
 use gltf_json as json;
 
+use gltf_transform_rs as gltf;
 use std::{fs, mem};
 
 use json::validation::Checked::Valid;

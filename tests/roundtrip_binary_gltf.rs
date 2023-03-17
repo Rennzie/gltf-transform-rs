@@ -3,6 +3,7 @@
 //! Read some binary glTF, write it to disk, and compare to the original.
 //! The test will succeed if the output is the same as the original.
 
+use gltf_transform_rs as gltf;
 use std::io::Read;
 use std::{boxed, error, fs, io, path};
 

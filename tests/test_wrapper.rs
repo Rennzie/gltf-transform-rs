@@ -1,7 +1,7 @@
+use gltf::mesh::Bounds;
+use gltf_transform_rs as gltf;
 use std::io::Read;
 use std::{fs, io};
-
-use gltf::mesh::Bounds;
 
 #[test]
 fn test_accessor_bounds() {

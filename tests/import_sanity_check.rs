@@ -1,3 +1,4 @@
+use gltf_transform_rs as gltf;
 use std::error::Error as StdError;
 use std::{fs, path};
 
