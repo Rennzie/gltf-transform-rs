@@ -1,11 +1,13 @@
+use gltf::export::export_to_glb;
+use gltf::{
+    buffer::{to_padded_byte_vector, Data as BufferData},
+    Document,
+};
 use gltf_json as json;
-
 use gltf_transform_rs as gltf;
-use std::{fs, mem};
-
 use json::validation::Checked::Valid;
-use std::borrow::Cow;
 use std::io::Write;
+use std::{fs, mem};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 enum Output {
@@ -36,22 +38,6 @@ fn bounding_coords(points: &[Vertex]) -> ([f32; 3], [f32; 3]) {
         }
     }
     (min, max)
-}
-
-fn align_to_multiple_of_four(n: &mut u32) {
-    *n = (*n + 3) & !3;
-}
-
-fn to_padded_byte_vector<T>(vec: Vec<T>) -> Vec<u8> {
-    let byte_length = vec.len() * mem::size_of::<T>();
-    let byte_capacity = vec.capacity() * mem::size_of::<T>();
-    let alloc = vec.into_boxed_slice();
-    let ptr = Box::<[T]>::into_raw(alloc) as *mut u8;
-    let mut new_vec = unsafe { Vec::from_raw_parts(ptr, byte_length, byte_capacity) };
-    while new_vec.len() % 4 != 0 {
-        new_vec.push(0); // pad to multiple of four bytes
-    }
-    new_vec
 }
 
 fn export(output: Output) {
@@ -192,25 +178,17 @@ fn export(output: Output) {
             writer.write_all(&bin).expect("I/O error");
         }
         Output::Binary => {
-            let json_string = json::serialize::to_string(&root).expect("Serialization error");
-            let mut json_offset = json_string.len() as u32;
-            align_to_multiple_of_four(&mut json_offset);
-            let glb = gltf::binary::Glb {
-                header: gltf::binary::Header {
-                    magic: *b"glTF",
-                    version: 2,
-                    length: json_offset + buffer_length,
-                },
-                bin: Some(Cow::Owned(to_padded_byte_vector(triangle_vertices))),
-                json: Cow::Owned(json_string.into_bytes()),
-            };
-            let writer = std::fs::File::create("triangle.glb").expect("I/O error");
-            glb.to_writer(writer).expect("glTF binary output error");
+            export_to_glb(
+                "triangle.glb",
+                Document::from_json(root).expect("Document creation error"),
+                vec![BufferData(to_padded_byte_vector(triangle_vertices))],
+            )
+            .expect("gltf binary output error");
         }
     }
 }
 
 fn main() {
-    export(Output::Standard);
+    // export(Output::Standard);
     export(Output::Binary);
 }
