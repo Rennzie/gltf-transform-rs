@@ -1,4 +1,4 @@
-use gltf::export::export_to_glb;
+use gltf::export::{export_to_glb, export_to_gltf, Output};
 use gltf::{
     buffer::{to_padded_byte_vector, Data as BufferData},
     Document,
@@ -6,17 +6,7 @@ use gltf::{
 use gltf_json as json;
 use gltf_transform_rs as gltf;
 use json::validation::Checked::Valid;
-use std::io::Write;
-use std::{fs, mem};
-
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-enum Output {
-    /// Output standard glTF.
-    Standard,
-
-    /// Output binary glTF.
-    Binary,
-}
+use std::mem;
 
 #[derive(Copy, Clone, Debug)]
 #[repr(C)]
@@ -165,30 +155,26 @@ fn export(output: Output) {
         }],
         ..Default::default()
     };
-
+    let output_path = "./tmp/triangle.gltf";
     match output {
-        Output::Standard => {
-            let _ = fs::create_dir("triangle");
-
-            let writer = fs::File::create("triangle/triangle.gltf").expect("I/O error");
-            json::serialize::to_writer_pretty(writer, &root).expect("Serialization error");
-
-            let bin = to_padded_byte_vector(triangle_vertices);
-            let mut writer = fs::File::create("triangle/buffer0.bin").expect("I/O error");
-            writer.write_all(&bin).expect("I/O error");
-        }
         Output::Binary => {
             export_to_glb(
-                "triangle.glb",
+                output_path,
                 Document::from_json(root).expect("Document creation error"),
                 vec![BufferData(to_padded_byte_vector(triangle_vertices))],
             )
             .expect("gltf binary output error");
         }
+        Output::Standard => export_to_gltf(
+            output_path,
+            Document::from_json(root).expect("Document creation error"),
+            vec![BufferData(to_padded_byte_vector(triangle_vertices))],
+        )
+        .expect("gltf write error"),
     }
 }
 
 fn main() {
-    // export(Output::Standard);
     export(Output::Binary);
+    export(Output::Standard);
 }
