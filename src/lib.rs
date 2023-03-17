@@ -4,17 +4,18 @@
 
 //! glTF 2.0 loader
 //!
-//! This crate is intended to load [glTF 2.0], a file format designed for the
-//! efficient runtime transmission of 3D scenes. The crate aims to provide
-//! rustic utilities that make working with glTF simple and intuitive.
+//! This crate is a fork of the [gltf](https://github.com/gltf-rs/gltf) crate with the intention
+//! of modifying it for the purposes of transforming and exporting [glTF 2.0](https://www.khronos.org/gltf) files.
+//! It's inspired by the [gltf-transform](https://gltf-transform.donmccurdy.com/) Typescript library by [Don McCurdy](https://www.donmccurdy.com/).
 //!
 //! # Installation
 //!
-//! Add `gltf` to your `Cargo.toml`:
+//! Add `gltf-transform-rs` to your `Cargo.toml`:
+//! > Currently not published to crates.io
 //!
 //! ```toml
-//! [dependencies.gltf]
-//! version = "1.0"
+//! [dependencies.gltf-transform-rs]
+//! version = "0.1.0"
 //! ```
 //!
 //! # Examples
@@ -25,7 +26,7 @@
 //!
 //! ```
 //! # fn run() -> Result<(), Box<std::error::Error>> {
-//! # use gltf::Gltf;
+//! # use gltf-transform-rs::Gltf;
 //! let gltf = Gltf::open("examples/Box.gltf")?;
 //! for scene in gltf.scenes() {
 //!     for node in scene.nodes() {
@@ -50,7 +51,7 @@
 //!
 //! ```
 //! # fn run() -> Result<(), Box<std::error::Error>> {
-//! let (document, buffers, images) = gltf::import("examples/Box.gltf")?;
+//! let (document, buffers, images) = gltf-transform-rs::import("examples/Box.gltf")?;
 //! assert_eq!(buffers.len(), document.buffers().count());
 //! assert_eq!(images.len(), document.images().count());
 //! # Ok(())
