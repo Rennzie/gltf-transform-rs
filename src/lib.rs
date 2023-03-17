@@ -26,7 +26,7 @@
 //!
 //! ```
 //! # fn run() -> Result<(), Box<std::error::Error>> {
-//! # use gltf-transform-rs::Gltf;
+//! # use gltf_transform_rs::Gltf;
 //! let gltf = Gltf::open("examples/Box.gltf")?;
 //! for scene in gltf.scenes() {
 //!     for node in scene.nodes() {
@@ -51,7 +51,7 @@
 //!
 //! ```
 //! # fn run() -> Result<(), Box<std::error::Error>> {
-//! let (document, buffers, images) = gltf-transform-rs::import("examples/Box.gltf")?;
+//! let (document, buffers, images) = gltf_transform_rs::import("examples/Box.gltf")?;
 //! assert_eq!(buffers.len(), document.buffers().count());
 //! assert_eq!(images.len(), document.images().count());
 //! # Ok(())
