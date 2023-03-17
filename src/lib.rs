@@ -362,6 +362,7 @@ impl Document {
 
     /// Unwraps the glTF document.
     pub fn into_json(self) -> json::Root {
+        // This should traverse the data structure and turn each sub element into json;
         self.0
     }
 
