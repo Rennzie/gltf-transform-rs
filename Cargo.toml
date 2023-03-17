@@ -32,11 +32,12 @@ optional = true
 version = "0.24"
 
 [features]
-default = ["import", "utils", "names"]
+default = ["import", "utils", "export", "names"]
 extras = ["gltf-json/extras"]
 names = ["gltf-json/names"]
 utils = []
 import = ["base64", "image", "urlencoding"]
+export = ["base64", "image", "urlencoding"]
 KHR_lights_punctual = ["gltf-json/KHR_lights_punctual"]
 KHR_materials_pbrSpecularGlossiness = ["gltf-json/KHR_materials_pbrSpecularGlossiness"]
 KHR_materials_unlit = ["gltf-json/KHR_materials_unlit"]

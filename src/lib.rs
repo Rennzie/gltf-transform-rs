@@ -111,6 +111,11 @@ pub mod image;
 #[cfg_attr(docsrs, doc(cfg(feature = "import")))]
 mod import;
 
+/// Exporter.
+#[cfg(feature = "export")]
+#[cfg_attr(docsrs, doc(cfg(feature = "export")))]
+pub mod export;
+
 /// Iterators for walking the glTF node hierarchy.
 pub mod iter;
 
