@@ -1,8 +1,9 @@
+use super::accessor::{create_accessor_from_json, Accessor};
 use super::extras_extensions::ExtrasExtension;
+use crate::buffer::Data;
+use rayon::prelude::*;
 
 pub struct Scene(gltf_json::Scene);
-
-pub struct Accessor;
 
 pub struct Animation(gltf_json::Animation);
 
@@ -65,42 +66,58 @@ pub struct Root {
 }
 
 impl Root {
-    pub fn from_json(json: &gltf_json::Root) -> Self {
+    pub fn from_json(root_json: &gltf_json::Root, buffer: &[Data]) -> Self {
         Root {
-            asset: json.asset.clone(),
-            default_scene: json.scene.map(|scene| scene.value()),
-            accessors: json.accessors.iter().map(|_| Accessor).collect(),
-            animations: json
+            asset: root_json.asset.clone(),
+            default_scene: root_json.scene.map(|scene| scene.value()),
+            accessors: root_json
+                .accessors
+                .par_iter()
+                .map(|accessor_json| create_accessor_from_json(accessor_json, root_json, buffer))
+                .collect(),
+            animations: root_json
                 .animations
-                .iter()
+                .par_iter()
                 .map(|animation| Animation(animation.clone()))
                 .collect(),
-            cameras: json
+            cameras: root_json
                 .cameras
-                .iter()
+                .par_iter()
                 .map(|camera| Camera(camera.clone()))
                 .collect(),
-            materials: json
+            materials: root_json
                 .materials
-                .iter()
+                .par_iter()
                 .map(|material| Material(material.clone()))
                 .collect(),
-            meshes: json.meshes.iter().map(|mesh| Mesh(mesh.clone())).collect(),
-            nodes: json.nodes.iter().map(|node| Node(node.clone())).collect(),
-            scenes: json
+            meshes: root_json
+                .meshes
+                .par_iter()
+                .map(|mesh| Mesh(mesh.clone()))
+                .collect(),
+            nodes: root_json
+                .nodes
+                .par_iter()
+                .map(|node| Node(node.clone()))
+                .collect(),
+            scenes: root_json
                 .scenes
-                .iter()
+                .par_iter()
                 .map(|scene| Scene(scene.clone()))
                 .collect(),
-            skins: json.skins.iter().map(|skin| Skin(skin.clone())).collect(),
-            textures: json
+            skins: root_json
+                .skins
+                .par_iter()
+                .map(|skin| Skin(skin.clone()))
+                .collect(),
+            textures: root_json
                 .textures
-                .iter()
+                .par_iter()
                 .map(|texture| Texture(texture.clone()))
                 .collect(),
-            images: json
+            images: root_json
                 .images
-                .iter()
+                .par_iter()
                 .map(|image| Image(image.clone()))
                 .collect(),
             extras_extensions: None,
