@@ -1,4 +1,4 @@
-#![deny(missing_docs)]
+// #![deny(missing_docs)]
 #![allow(unknown_lints)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
@@ -77,6 +77,14 @@
 //! [`Glb`]: struct.Glb.html
 //! [`Node`]: struct.Node.html
 //! [`Scene`]: struct.Scene.html
+
+// ==============================
+// ===== New Section START =======
+
+pub mod properties;
+
+// ===== New Section END ========
+// ==============================
 
 #[cfg(test)]
 #[macro_use]

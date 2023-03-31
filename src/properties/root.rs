@@ -1,24 +1,23 @@
 use super::extras_extensions::ExtrasExtension;
 
-/// Todo: Add docs
 pub struct Scene(gltf_json::Scene);
-/// Todo: Add docs
+
 pub struct Accessor;
-/// Todo: Add docs
+
 pub struct Animation(gltf_json::Animation);
-/// Todo: Add docs
+
 pub struct Camera(gltf_json::Camera);
-/// Todo: Add docs
+
 pub struct Material(gltf_json::Material);
-/// Todo: Add docs
+
 pub struct Mesh(gltf_json::Mesh);
-/// Todo: Add docs
+
 pub struct Node(gltf_json::Node);
-/// Todo: Add docs
+
 pub struct Skin(gltf_json::Skin);
-/// Todo: Add docs
+
 pub struct Texture(gltf_json::Texture);
-/// Todo: Add docs
+
 pub struct Image(gltf_json::Image);
 
 /// The Root of the glTF asset.
@@ -175,5 +174,29 @@ impl Root {
     /// Returns an iterator over the images.
     pub fn images(&self) -> impl Iterator<Item = &Image> {
         self.images.iter()
+    }
+}
+
+// TODO: revisit the root implementation
+impl Default for Root {
+    fn default() -> Self {
+        Root {
+            asset: gltf_json::Asset {
+                version: "2.0".to_string(),
+                ..Default::default()
+            },
+            default_scene: None,
+            accessors: Vec::new(),
+            animations: Vec::new(),
+            cameras: Vec::new(),
+            materials: Vec::new(),
+            meshes: Vec::new(),
+            nodes: Vec::new(),
+            scenes: Vec::new(),
+            skins: Vec::new(),
+            textures: Vec::new(),
+            images: Vec::new(),
+            extras_extensions: None,
+        }
     }
 }
