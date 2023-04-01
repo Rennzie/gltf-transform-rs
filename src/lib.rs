@@ -81,6 +81,8 @@
 // ==============================
 // ===== New Section START =======
 
+pub mod document;
+pub mod platform_io;
 pub mod properties;
 
 // ===== New Section END ========
@@ -115,15 +117,15 @@ pub mod camera;
 /// Images that may be used by textures.
 pub mod image;
 
-/// The reference importer.
-#[cfg(feature = "import")]
-#[cfg_attr(docsrs, doc(cfg(feature = "import")))]
-mod import;
+// /// The reference importer.
+// #[cfg(feature = "import")]
+// #[cfg_attr(docsrs, doc(cfg(feature = "import")))]
+// mod import;
 
-/// Exporter.
-#[cfg(feature = "export")]
-#[cfg_attr(docsrs, doc(cfg(feature = "export")))]
-pub mod export;
+// /// Exporter.
+// #[cfg(feature = "export")]
+// #[cfg_attr(docsrs, doc(cfg(feature = "export")))]
+// pub mod export;
 
 /// Iterators for walking the glTF node hierarchy.
 pub mod iter;
@@ -168,12 +170,12 @@ pub use self::buffer::Buffer;
 pub use self::camera::Camera;
 #[doc(inline)]
 pub use self::image::Image;
-#[cfg(feature = "import")]
-#[doc(inline)]
-pub use self::import::import;
-#[cfg(feature = "import")]
-#[doc(inline)]
-pub use self::import::import_slice;
+// #[cfg(feature = "import")]
+// #[doc(inline)]
+// pub use self::import::import;
+// #[cfg(feature = "import")]
+// #[doc(inline)]
+// pub use self::import::import_slice;
 #[doc(inline)]
 pub use self::material::Material;
 #[doc(inline)]

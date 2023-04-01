@@ -133,7 +133,7 @@ fn create_f32_accessor_from_json(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::import;
+    use crate::platform_io::import;
 
     #[test]
     fn test_round_trip() {

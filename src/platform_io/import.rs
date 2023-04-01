@@ -1,14 +1,67 @@
 use crate::buffer;
+use crate::document::Document;
 use crate::image;
 use std::borrow::Cow;
 use std::{fs, io};
 
-use crate::{Document, Error, Gltf, Result};
+use super::glb_reader::GlbReader;
+use super::{Error, Result};
+use gltf_json::Root as RootJson;
 use image_crate::ImageFormat::{Jpeg, Png};
 use std::path::Path;
 
-/// Return type of `import`.
-type Import = (Document, Vec<buffer::Data>, Vec<image::Data>);
+use super::gltf_reader::GltfReader;
+
+type Import = (RootJson, Vec<buffer::Data>, Vec<image::Data>);
+
+// Import a GlTF should:
+// 1. Read the file to a RootJson
+// 2. Read the external buffers to a list of buffers
+// 3. Read the external images to a list of images
+
+// Import a GlB should:
+// 1. Read the file to a RootJson and a the remaining blob
+// 2. Interpret the blob into a list of buffers and images
+// 3. Check for external resources and load them
+
+// In both cases the import should return a Document
+
+pub fn import<P>(path: P) -> Result<Document>
+where
+    P: AsRef<Path>,
+{
+    let base = path.as_ref().parent().unwrap_or_else(|| Path::new("./"));
+    let file = fs::File::open(path).map_err(Error::Io)?;
+    let reader = io::BufReader::new(file);
+
+    path.as_ref()
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .map_or_else(
+            || Err(Error::InvalidExtension),
+            |ext| match ext {
+                "gltf" => import_gltf(base, reader),
+                "glb" => import_glb(base, reader),
+                _ => Err(Error::InvalidExtension),
+            },
+        )
+}
+
+fn import_gltf<P>(base: P, reader: io::BufReader<fs::File>) -> Result<Document> {
+    let reader = GltfReader::from_reader(reader).unwrap();
+    // let (root_json, buffers, images) = import_buffers_and_images(base, reader)?;
+    // let buffers = import_buffer_data(reader.root_json, base, blobs);
+    Ok(Document::from_json(reader.root_json, buffers))
+}
+
+fn import_glb(base: &Path, reader: io::BufReader<fs::File>) -> Result<Document> {
+    let glb = GlbReader::from_reader(reader).unwrap();
+    let root_json = json::deserialize::from_slice::<RootJson>(&glb.json).unwrap();
+    let blob = glb.bin.take().map(|blob| blob.into_owned()); // not sure why this is necessary?
+
+    let buffers = import_buffer_data(&root_json, Some(base), blob).unwrap();
+    Ok(Document::from_json(root_json, buffers))
+}
 
 /// Represents the set of URI schemes the importer supports.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -83,12 +136,12 @@ where
 
 /// Import the buffer data referenced by a glTF document.
 pub fn import_buffer_data(
-    document: &Document,
+    root_json: &RootJson,
     base: Option<&Path>,
     mut blob: Option<Vec<u8>>,
 ) -> Result<Vec<buffer::Data>> {
     let mut buffers = Vec::new();
-    for buffer in document.buffers() {
+    for buffer in root_json.buffers.iter() {
         let mut data = match buffer.source() {
             buffer::Source::Uri(uri) => Scheme::read(base, uri),
             buffer::Source::Bin => blob.take().ok_or(Error::MissingBlob),
@@ -186,56 +239,15 @@ pub fn import_image_data(
     Ok(images)
 }
 
-fn import_impl(Gltf { document, blob }: Gltf, base: Option<&Path>) -> Result<Import> {
-    let buffer_data = import_buffer_data(&document, base, blob)?;
-    let image_data = import_image_data(&document, base, &buffer_data)?;
-    let import = (document, buffer_data, image_data);
+fn import_impl(GltfReader { root_json, blob }: GltfReader, base: Option<&Path>) -> Result<Import> {
+    let buffer_data = import_buffer_data(&root_json, base, blob)?;
+    let image_data = import_image_data(&root_json, base, &buffer_data)?;
+    let import = (root_json, buffer_data, image_data);
     Ok(import)
 }
 
-fn import_path(path: &Path) -> Result<Import> {
-    let base = path.parent().unwrap_or_else(|| Path::new("./"));
-    let file = fs::File::open(path).map_err(Error::Io)?;
-    let reader = io::BufReader::new(file);
-    import_impl(Gltf::from_reader(reader)?, Some(base))
-}
-
-/// Import some glTF 2.0 from the file system.
-///
-/// ```
-/// # fn run() -> Result<(), gltf::Error> {
-/// # let path = "examples/Box.gltf";
-/// # #[allow(unused)]
-/// let (document, buffers, images) = gltf::import(path)?;
-/// # Ok(())
-/// # }
-/// # fn main() {
-/// #     run().expect("test failure");
-/// # }
-/// ```
-///
-/// ### Note
-///
-/// This function is provided as a convenience for loading glTF and associated
-/// resources from the file system. It is suitable for real world use but may
-/// not be suitable for all real world use cases. More complex import scenarios
-/// such downloading from web URLs are not handled by this function. These
-/// scenarios are delegated to the user.
-///
-/// You can read glTF without loading resources by constructing the [`Gltf`]
-/// (standard glTF) or [`Glb`] (binary glTF) data structures explicitly.
-///
-/// [`Gltf`]: struct.Gltf.html
-/// [`Glb`]: struct.Glb.html
-pub fn import<P>(path: P) -> Result<Import>
-where
-    P: AsRef<Path>,
-{
-    import_path(path.as_ref())
-}
-
 pub fn import_slice_impl(slice: &[u8]) -> Result<Import> {
-    import_impl(Gltf::from_slice(slice)?, None)
+    import_impl(GltfReader::from_slice(slice)?, None)
 }
 
 /// Import some glTF 2.0 from a slice

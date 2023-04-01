@@ -9,29 +9,20 @@ use buffer::{align_to_multiple_of_four, to_padded_byte_vector, Data};
 
 use crate::{Document, Error};
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-/// The type of output to write.
-pub enum Output {
-    /// Output standard glTF.
-    /// Can only be used if the imported glTF has buffer uri's pre-set.
-    /// Todo: allow mutation of buffer uri's
-    Standard,
-    /// Output binary glTF.
-    Binary,
-}
+use super::Variant;
 
 /// Export a glTF document
 /// TODO: support images
 pub fn export(
-    output: Output,
+    output: Variant,
     path: &str,
     document: Document,
     buffers: Vec<Data>,
     // _image_buffers: Vec<image::Data>,
 ) -> Result<(), Error> {
     match output {
-        Output::Standard => export_to_gltf(path, document, buffers),
-        Output::Binary => export_to_glb(path, document, buffers),
+        Variant::GlTF => export_to_gltf(path, document, buffers),
+        Variant::Glb => export_to_glb(path, document, buffers),
     }
 }
 
