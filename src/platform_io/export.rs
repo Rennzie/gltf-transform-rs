@@ -2,11 +2,6 @@ use std::borrow::Cow;
 use std::io::{ErrorKind, Write};
 use std::{fs, path};
 
-use crate::binary;
-use crate::buffer;
-use crate::buffer::Source;
-use buffer::{align_to_multiple_of_four, to_padded_byte_vector, Data};
-
 use crate::{Document, Error};
 
 use super::Variant;

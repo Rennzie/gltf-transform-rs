@@ -34,23 +34,7 @@ optional = true
 version = "0.24"
 
 [features]
-default = ["import", "utils", "export", "names"]
-extras = ["gltf-json/extras"]
-names = ["gltf-json/names"]
-utils = []
-import = ["base64", "image", "urlencoding"]
-export = ["base64", "image", "urlencoding"]
-KHR_lights_punctual = ["gltf-json/KHR_lights_punctual"]
-KHR_materials_pbrSpecularGlossiness = ["gltf-json/KHR_materials_pbrSpecularGlossiness"]
-KHR_materials_unlit = ["gltf-json/KHR_materials_unlit"]
-KHR_texture_transform = ["gltf-json/KHR_texture_transform"]
-KHR_materials_transmission = ["gltf-json/KHR_materials_transmission"]
-KHR_materials_ior = ["gltf-json/KHR_materials_ior"]
-KHR_materials_variants = ["gltf-json/KHR_materials_variants"]
-KHR_materials_volume = ["gltf-json/KHR_materials_volume"]
-KHR_materials_specular = ["gltf-json/KHR_materials_specular"]
-image_jpeg_rayon = ["image/jpeg_rayon"]
-guess_mime_type = []
+
 
 [[example]]
 name = "gltf-display"

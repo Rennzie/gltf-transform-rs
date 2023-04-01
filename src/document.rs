@@ -1,14 +1,12 @@
-use crate::buffer::Data;
-use crate::properties::accessor::Accessor;
-use crate::properties::root::Root;
-use crate::properties::{Animation, Camera, Image, Material, Mesh, Node, Scene, Skin, Texture};
+use crate::properties::prelude::*;
+use crate::properties::BufferData;
 
 pub struct Document {
     pub root: Root,
 }
 
 impl Document {
-    pub fn from_json(root_json: gltf_json::Root, blob: Option<Vec<Data>>) -> Self {
+    pub fn from_json(root_json: gltf_json::Root, blob: Option<Vec<BufferData>>) -> Self {
         if let Some(buffer) = blob {
             Self {
                 root: Root::from_json(root_json, buffer),

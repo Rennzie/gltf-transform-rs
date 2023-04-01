@@ -1,8 +1,10 @@
 use crate::Document;
 
+pub struct Camera(gltf_json::Camera);
+
 /// A camera's projection.
 #[derive(Clone, Debug)]
-pub enum Projection<'a> {
+enum Projection<'a> {
     /// Describes an orthographic projection.
     Orthographic(Orthographic<'a>),
 
@@ -13,7 +15,7 @@ pub enum Projection<'a> {
 /// A camera's projection.  A node can reference a camera to apply a transform to
 /// place the camera in the scene.
 #[derive(Clone, Debug)]
-pub struct Camera<'a> {
+struct CameraOld<'a> {
     /// The parent `Document` struct.
     document: &'a Document,
 
@@ -26,7 +28,7 @@ pub struct Camera<'a> {
 
 ///  Values for an orthographic camera projection.
 #[derive(Clone, Debug)]
-pub struct Orthographic<'a> {
+struct Orthographic<'a> {
     /// The parent `Document` struct.
     #[allow(dead_code)]
     document: &'a Document,
@@ -37,7 +39,7 @@ pub struct Orthographic<'a> {
 
 /// Values for a perspective camera projection.
 #[derive(Clone, Debug)]
-pub struct Perspective<'a> {
+struct Perspective<'a> {
     /// The parent `Document` struct.
     #[allow(dead_code)]
     document: &'a Document,
@@ -46,13 +48,9 @@ pub struct Perspective<'a> {
     json: &'a json::camera::Perspective,
 }
 
-impl<'a> Camera<'a> {
+impl<'a> CameraOld<'a> {
     /// Constructs a `Camera`.
-    pub(crate) fn new(
-        document: &'a Document,
-        index: usize,
-        json: &'a json::camera::Camera,
-    ) -> Self {
+    pub fn new(document: &'a Document, index: usize, json: &'a json::camera::Camera) -> Self {
         Self {
             document,
             index,
@@ -61,19 +59,19 @@ impl<'a> Camera<'a> {
     }
 
     /// Returns the internal JSON index.
-    pub fn index(&self) -> usize {
+    fn index(&self) -> usize {
         self.index
     }
 
     /// Optional user-defined name for this object.
     #[cfg(feature = "names")]
     #[cfg_attr(docsrs, doc(cfg(feature = "names")))]
-    pub fn name(&self) -> Option<&'a str> {
+    fn name(&self) -> Option<&'a str> {
         self.json.name.as_deref()
     }
 
     /// Returns the camera's projection.
-    pub fn projection(&self) -> Projection {
+    fn projection(&self) -> Projection {
         match self.json.type_.unwrap() {
             json::camera::Type::Orthographic => {
                 let json = self.json.orthographic.as_ref().unwrap();
@@ -87,71 +85,71 @@ impl<'a> Camera<'a> {
     }
 
     /// Optional application specific data.
-    pub fn extras(&self) -> &'a json::Extras {
+    fn extras(&self) -> &'a json::Extras {
         &self.json.extras
     }
 }
 
 impl<'a> Orthographic<'a> {
     /// Constructs a `Orthographic` camera projection.
-    pub(crate) fn new(document: &'a Document, json: &'a json::camera::Orthographic) -> Self {
+    pub fn new(document: &'a Document, json: &'a json::camera::Orthographic) -> Self {
         Self { document, json }
     }
 
     ///  The horizontal magnification of the view.
-    pub fn xmag(&self) -> f32 {
+    fn xmag(&self) -> f32 {
         self.json.xmag
     }
 
     ///  The vertical magnification of the view.
-    pub fn ymag(&self) -> f32 {
+    fn ymag(&self) -> f32 {
         self.json.ymag
     }
 
     ///  The distance to the far clipping plane.
-    pub fn zfar(&self) -> f32 {
+    fn zfar(&self) -> f32 {
         self.json.zfar
     }
 
     ///  The distance to the near clipping plane.
-    pub fn znear(&self) -> f32 {
+    fn znear(&self) -> f32 {
         self.json.znear
     }
 
     ///  Optional application specific data.
-    pub fn extras(&self) -> &'a json::Extras {
+    fn extras(&self) -> &'a json::Extras {
         &self.json.extras
     }
 }
 
 impl<'a> Perspective<'a> {
     /// Constructs a `Perspective` camera projection.
-    pub(crate) fn new(document: &'a Document, json: &'a json::camera::Perspective) -> Self {
+    pub fn new(document: &'a Document, json: &'a json::camera::Perspective) -> Self {
         Self { document, json }
     }
 
     ///  Aspect ratio of the field of view.
-    pub fn aspect_ratio(&self) -> Option<f32> {
+    fn aspect_ratio(&self) -> Option<f32> {
         self.json.aspect_ratio
     }
 
     ///  The vertical field of view in radians.
-    pub fn yfov(&self) -> f32 {
+    fn yfov(&self) -> f32 {
         self.json.yfov
     }
 
     ///  The distance to the far clipping plane.
-    pub fn zfar(&self) -> Option<f32> {
+    fn zfar(&self) -> Option<f32> {
         self.json.zfar
     }
 
     ///  The distance to the near clipping plane.
-    pub fn znear(&self) -> f32 {
+    fn znear(&self) -> f32 {
         self.json.znear
     }
 
     ///  Optional application specific data.
-    pub fn extras(&self) -> &'a json::Extras {
+    fn extras(&self) -> &'a json::Extras {
         &self.json.extras
     }
 }

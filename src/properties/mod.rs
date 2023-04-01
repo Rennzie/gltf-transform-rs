@@ -1,22 +1,37 @@
-pub mod accessor;
+use std::io::prelude;
+
+mod accessor;
+mod animation;
+mod buffer;
+mod camera;
 mod extras_extensions;
-pub mod root;
+mod image;
+mod material;
+mod mesh;
+mod node;
+mod root;
+mod scene;
+mod skin;
+mod texture;
 mod traits;
 
-pub struct Scene(gltf_json::Scene);
+// ---- Core Properties ---------------------------------------------------------
+pub mod prelude {
+    pub use crate::accessor::Accessor;
+    pub use crate::animation::Animation;
+    pub use crate::buffer::Buffer;
+    pub use crate::camera::Camera;
+    pub use crate::extras_extensions::ExtrasExtensions;
+    pub use crate::image::Image;
+    pub use crate::material::Material;
+    pub use crate::mesh::Mesh;
+    pub use crate::node::Node;
+    pub use crate::root::Root;
+    pub use crate::scene::Scene;
+    pub use crate::skin::Skin;
+    pub use crate::texture::Texture;
+}
 
-pub struct Animation(gltf_json::Animation);
-
-pub struct Camera(gltf_json::Camera);
-
-pub struct Material(gltf_json::Material);
-
-pub struct Mesh(gltf_json::Mesh);
-
-pub struct Node(gltf_json::Node);
-
-pub struct Skin(gltf_json::Skin);
-
-pub struct Texture(gltf_json::Texture);
-
-pub struct Image(gltf_json::Image);
+// ---- Buffer bits for IO ------------------------------------------------------
+pub use crate::buffer::Data as BufferData;
+pub use crate::buffer::View as BufferView;

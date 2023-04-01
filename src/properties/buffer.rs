@@ -1,4 +1,3 @@
-#[cfg(feature = "import")]
 use std::{mem, ops};
 
 use crate::Document;
@@ -47,13 +46,9 @@ pub enum Source<'a> {
 }
 
 /// Buffer data belonging to an imported glTF asset.
-#[cfg(feature = "import")]
-#[cfg_attr(docsrs, doc(cfg(feature = "import")))]
 #[derive(Clone, Debug)]
 pub struct Data(pub Vec<u8>);
 
-#[cfg(feature = "import")]
-#[cfg_attr(docsrs, doc(cfg(feature = "import")))]
 impl ops::Deref for Data {
     type Target = [u8];
     fn deref(&self) -> &Self::Target {
@@ -95,8 +90,6 @@ impl<'a> Buffer<'a> {
     }
 
     /// Optional user-defined name for this object.
-    #[cfg(feature = "names")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "names")))]
     pub fn name(&self) -> Option<&'a str> {
         self.json.name.as_deref()
     }
@@ -157,8 +150,6 @@ impl<'a> View<'a> {
     }
 
     /// Optional user-defined name for this object.
-    #[cfg(feature = "names")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "names")))]
     pub fn name(&self) -> Option<&'a str> {
         self.json.name.as_deref()
     }

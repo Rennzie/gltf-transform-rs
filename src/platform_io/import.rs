@@ -174,7 +174,7 @@ pub fn import_image_data(
         Ok(image_crate::ImageFormat::Jpeg) => Some(Jpeg),
         _ => None,
     };
-    #[cfg(not(feature = "guess_mime_type"))]
+    // #[cfg(not(feature = "guess_mime_type"))]
     let guess_format = |_encoded_image: &[u8]| None;
     for image in document.images() {
         let decoded_image = match image.source() {
