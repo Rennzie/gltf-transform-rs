@@ -1,1 +1,1 @@
-pub struct Texture(gltf_json::Texture);
+pub struct Texture(json::Texture);

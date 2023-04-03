@@ -1,14 +1,14 @@
+use super::glb_reader::GlbReader;
+use super::{Error, Result};
 use crate::buffer;
 use crate::document::Document;
 use crate::image;
-use std::borrow::Cow;
-use std::{fs, io};
-
-use super::glb_reader::GlbReader;
-use super::{Error, Result};
-use gltf_json::Root as RootJson;
+use crate::properties::buffer::Blob;
 use image_crate::ImageFormat::{Jpeg, Png};
+use json::Root as RootJson;
+use std::borrow::Cow;
 use std::path::Path;
+use std::{fs, io};
 
 use super::gltf_reader::GltfReader;
 
@@ -60,7 +60,7 @@ fn import_glb(base: &Path, reader: io::BufReader<fs::File>) -> Result<Document> 
     let blob = glb.bin.take().map(|blob| blob.into_owned()); // not sure why this is necessary?
 
     let buffers = import_buffer_data(&root_json, Some(base), blob).unwrap();
-    Ok(Document::from_json(root_json, buffers))
+    Ok(Document::from_json(root_json, Some(buffers))) //TODO: Check this is actually an option
 }
 
 /// Represents the set of URI schemes the importer supports.
@@ -139,7 +139,7 @@ pub fn import_buffer_data(
     root_json: &RootJson,
     base: Option<&Path>,
     mut blob: Option<Vec<u8>>,
-) -> Result<Vec<buffer::Data>> {
+) -> Result<Vec<Blob>> {
     let mut buffers = Vec::new();
     for buffer in root_json.buffers.iter() {
         let mut data = match buffer.source() {
@@ -165,7 +165,7 @@ pub fn import_buffer_data(
 pub fn import_image_data(
     document: &Document,
     base: Option<&Path>,
-    buffer_data: &[buffer::Data],
+    buffer_data: &[Blob],
 ) -> Result<Vec<image::Data>> {
     let mut images = Vec::new();
     #[cfg(feature = "guess_mime_type")]

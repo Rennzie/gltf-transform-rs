@@ -1,6 +1,6 @@
 use std::{mem, ops};
 
-use crate::Document;
+use crate::document::Document;
 
 pub use json::buffer::Target;
 
@@ -47,9 +47,9 @@ pub enum Source<'a> {
 
 /// Buffer data belonging to an imported glTF asset.
 #[derive(Clone, Debug)]
-pub struct Data(pub Vec<u8>);
+pub struct Blob(pub Vec<u8>);
 
-impl ops::Deref for Data {
+impl ops::Deref for Blob {
     type Target = [u8];
     fn deref(&self) -> &Self::Target {
         self.0.as_slice()

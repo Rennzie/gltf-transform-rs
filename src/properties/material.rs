@@ -1,1 +1,1 @@
-pub struct Material(gltf_json::Material);
+pub struct Material(json::Material);

@@ -1,1 +1,1 @@
-pub struct Node(gltf_json::Node);
+pub struct Node(json::Node);

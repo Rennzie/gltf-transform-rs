@@ -1,12 +1,12 @@
-use crate::properties::prelude::*;
-use crate::properties::BufferData;
+use crate::prelude::*;
+use crate::properties::buffer;
 
 pub struct Document {
     pub root: Root,
 }
 
 impl Document {
-    pub fn from_json(root_json: gltf_json::Root, blob: Option<Vec<BufferData>>) -> Self {
+    pub fn from_json(root_json: json::Root, blob: Option<Vec<buffer::Blob>>) -> Self {
         if let Some(buffer) = blob {
             Self {
                 root: Root::from_json(root_json, buffer),

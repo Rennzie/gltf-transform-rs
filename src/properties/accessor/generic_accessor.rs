@@ -1,9 +1,9 @@
 use super::element::Element;
-use crate::buffer::Data;
+use crate::properties::buffer::Blob;
 use crate::properties::traits::{FromJson, ToJson};
 use bytemuck::Pod;
-use gltf_json::accessor::{ComponentType, Type as ElementType};
-use gltf_json::{accessor, Accessor as JsonAccessor, Index, Value};
+use json::accessor::Type as ElementType;
+use json::{Accessor as JsonAccessor, Index, Value};
 use std::marker::PhantomData;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -32,11 +32,9 @@ where
     pub sparse: bool,
 
     /// Optional user-defined name for this object.
-    #[cfg(feature = "names")]
     pub name: Option<String>,
 
     /// Optional application specific data.
-    #[cfg(feature = "extras")]
     pub extras_extensions: ExtrasExtension,
 }
 
@@ -45,7 +43,7 @@ where
     CT: Pod + std::fmt::Debug,
     ET: Element<CT> + Clone,
 {
-    fn from_json(accessor_json: &JsonAccessor, json: &gltf_json::Root, buffers: &[Data]) -> Self {
+    fn from_json(accessor_json: &JsonAccessor, json: &json::Root, buffers: &[Blob]) -> Self {
         let element_type = accessor_json.type_.unwrap();
         let component_type = accessor_json.component_type.unwrap().0;
 
@@ -87,9 +85,7 @@ where
             element_type,
             normalized: accessor_json.normalized,
             sparse: accessor_json.sparse.is_some(),
-            #[cfg(feature = "names")]
             name: accessor_json.name.clone(),
-            #[cfg(feature = "extras")]
             extras_extensions: ExtrasExtension::from_json(
                 &accessor_json.extras,
                 &accessor_json.extensions,
@@ -100,8 +96,8 @@ where
 
 /// Returns a tightly packed vector of bytes for the given accessor
 fn get_compact_bytes<CT, ET>(
-    buffer: &Data,
-    buffer_view_json: &gltf_json::buffer::View,
+    buffer: &Blob,
+    buffer_view_json: &json::buffer::View,
     accessor_json: &JsonAccessor,
     components_per_element: usize,
     bytes_per_component: usize,
@@ -134,12 +130,12 @@ where
     bytes
 }
 
-impl<CT, ET> ToJson<(JsonAccessor, gltf_json::buffer::View)> for GenericAccessor<CT, ET>
+impl<CT, ET> ToJson<(JsonAccessor, json::buffer::View)> for GenericAccessor<CT, ET>
 where
     CT: Pod + std::fmt::Debug,
     ET: Element<CT> + Clone,
 {
-    fn to_json(&self, index: usize) -> (JsonAccessor, gltf_json::buffer::View) {
+    fn to_json(&self, index: usize) -> (JsonAccessor, json::buffer::View) {
         let has_buffer = self.array.is_some();
         (
             JsonAccessor {
@@ -149,21 +145,21 @@ where
                     None
                 },
                 byte_offset: 0,
-                component_type: gltf_json::validation::Checked::Valid(
-                    accessor::GenericComponentType(self.component_type),
-                ),
+                component_type: json::validation::Checked::Valid(GenericComponentType(
+                    self.component_type,
+                )),
                 count: self.get_count() as u32,
-                #[cfg(feature = "names")]
                 name: self.name.clone(),
                 normalized: self.normalized,
                 sparse: None,
-                type_: gltf_json::validation::Checked::Valid(self.element_type),
+                type_: json::validation::Checked::Valid(self.element_type),
+                name: None,
                 extras: None,     // TODO: handle extras
                 extensions: None, // TODO: handle extensions
                 min: self.get_min_to_json(),
                 max: self.get_max_to_json(),
             },
-            gltf_json::buffer::View {
+            json::buffer::View {
                 buffer: Index::new(0),
                 byte_offset: Some(0),
                 byte_length: self.get_count() as u32 * self.component_type.size() as u32,

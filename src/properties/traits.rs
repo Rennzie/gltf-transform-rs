@@ -1,7 +1,7 @@
-use crate::buffer::Data;
+use super::buffer;
 
 pub trait FromJson<T> {
-    fn from_json(json: &T, doc: &gltf_json::Root, buffers: &[Data]) -> Self;
+    fn from_json(json: &T, doc: &json::Root, buffers: &[buffer::Blob]) -> Self;
 }
 
 pub trait ToJson<T> {

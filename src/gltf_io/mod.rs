@@ -28,7 +28,6 @@ impl Variant {
 
 // ---- Export ----------------------------------------------------------------
 mod export;
-
 pub use export::export;
 pub use export::export_to_glb;
 pub use export::export_to_gltf;

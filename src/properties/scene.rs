@@ -1,1 +1,1 @@
-pub struct Scene(gltf_json::Scene);
+pub struct Scene(json::Scene);

@@ -1,14 +1,12 @@
 mod element;
 mod generic_accessor;
 
-use crate::buffer::Data;
 use crate::properties::traits::{FromJson, ToJson};
 use element::*;
 use generic_accessor::GenericAccessor;
-use gltf_json::accessor::{ComponentType, Type as ElementType};
+use json::accessor::{ComponentType, Type as ElementType};
 
-#[cfg(feature = "extras")]
-use super::extras_extensions::ExtrasExtension;
+use super::{buffer::Blob, extras_extensions::ExtrasExtension};
 
 // ---- Generic Accessor Aliases -----------
 // todo: add default to generic to make these more useful
@@ -40,9 +38,7 @@ pub type Mat4F32 = GenericAccessor<f32, Mat4<f32>>;
 //             element_type: ElementType::Scalar,
 //             normalized: false,
 //             sparse: false,
-//             #[cfg(feature = "names")]
 //             name: None,
-//             #[cfg(feature = "extras")]
 //             extras_extensions: ExtrasExtension::default(),
 //         }
 //     }
@@ -76,8 +72,8 @@ pub enum Accessor {
 
 /// Create accessors from the deserialised json struct
 pub fn create_accessor_from_json(
-    accessor_json: &gltf_json::Accessor,
-    root: &gltf_json::Root,
+    accessor_json: &json::Accessor,
+    root: &json::Root,
     buffer: &[Data],
 ) -> Accessor {
     let component_type = accessor_json.component_type.unwrap().0;
@@ -90,9 +86,9 @@ pub fn create_accessor_from_json(
 
 /// Create accessors with u16 data from the deserialised json struct
 fn create_u16_accessor_from_json(
-    accessor_json: &gltf_json::Accessor,
-    root: &gltf_json::Root,
-    buffer: &[Data],
+    accessor_json: &json::Accessor,
+    root: &json::Root,
+    buffer: &[Blob],
 ) -> Accessor {
     let element_type = accessor_json.type_.unwrap();
     match element_type {
@@ -110,9 +106,9 @@ fn create_u16_accessor_from_json(
 
 /// Create accessors with f32 data from the deserialised json struct
 fn create_f32_accessor_from_json(
-    accessor_json: &gltf_json::Accessor,
-    root: &gltf_json::Root,
-    buffer: &[Data],
+    accessor_json: &json::Accessor,
+    root: &json::Root,
+    buffer: Blob,
 ) -> Accessor {
     let element_type = accessor_json.type_.unwrap();
     match element_type {
@@ -133,7 +129,7 @@ fn create_f32_accessor_from_json(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::platform_io::import;
+    use crate::gltf_io::import;
 
     #[test]
     fn test_round_trip() {

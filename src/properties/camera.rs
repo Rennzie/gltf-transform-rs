@@ -1,6 +1,6 @@
 use crate::Document;
 
-pub struct Camera(gltf_json::Camera);
+pub struct Camera(json::Camera);
 
 /// A camera's projection.
 #[derive(Clone, Debug)]
@@ -64,8 +64,6 @@ impl<'a> CameraOld<'a> {
     }
 
     /// Optional user-defined name for this object.
-    #[cfg(feature = "names")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "names")))]
     fn name(&self) -> Option<&'a str> {
         self.json.name.as_deref()
     }

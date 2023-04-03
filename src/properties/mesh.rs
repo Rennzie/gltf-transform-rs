@@ -1,1 +1,1 @@
-pub struct Mesh(gltf_json::Mesh);
+pub struct Mesh(json::Mesh);

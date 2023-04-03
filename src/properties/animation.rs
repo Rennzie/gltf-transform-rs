@@ -1,1 +1,1 @@
-pub struct Animation(gltf_json::Animation);
+pub struct Animation(json::Animation);

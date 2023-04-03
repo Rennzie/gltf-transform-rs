@@ -9,7 +9,7 @@ use rayon::prelude::*;
 /// All properties are directly accessible form the root
 pub struct Root {
     /// Metadata about the glTF asset.
-    pub asset: gltf_json::Asset,
+    pub asset: json::Asset,
     // Reference to the default scene.
     pub default_scene: Option<usize>,
 
@@ -50,14 +50,14 @@ pub struct Root {
 }
 
 impl Root {
-    pub fn from_json(root_json: gltf_json::Root, buffer: Vec<Data>) -> Self {
+    pub fn from_json(root_json: json::Root, buffer: Vec<Data>) -> Self {
         Root {
             asset: root_json.asset.clone(),
             default_scene: root_json.scene.map(|scene| scene.value()),
             accessors: root_json
                 .accessors
                 .par_iter()
-                .map(|accessor_json| create_accessor_from_json(accessor_json, &root_json, buffer))
+                .map(|accessor_json| create_accessor_from_json(accessor_json, &root_json, &buffer))
                 .collect(),
             animations: root_json
                 .animations
@@ -109,7 +109,7 @@ impl Root {
     }
 
     /// Returns the metadata about the glTF asset.
-    pub fn asset(&self) -> &gltf_json::Asset {
+    pub fn asset(&self) -> &json::Asset {
         &self.asset
     }
 
@@ -130,7 +130,7 @@ impl Root {
 impl Default for Root {
     fn default() -> Self {
         Root {
-            asset: gltf_json::Asset {
+            asset: json::Asset {
                 version: "2.0".to_string(),
                 ..Default::default()
             },

@@ -1,4 +1,4 @@
-use gltf_json::Root as RootJson;
+use json::Root as RootJson;
 
 use crate::Result;
 

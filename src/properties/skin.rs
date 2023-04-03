@@ -1,1 +1,1 @@
-pub struct Skin(gltf_json::Skin);
+pub struct Skin(json::Skin);
