@@ -1,6 +1,9 @@
-use crate::prelude::*;
 use crate::properties::buffer;
+use crate::properties::{
+    Accessor, Animation, Camera, Image, Material, Mesh, Node, Root, Scene, Skin, Texture,
+};
 
+#[derive(Debug, Clone)]
 pub struct Document {
     pub root: Root,
 }
@@ -26,7 +29,7 @@ impl Document {
 
     /// Returns the scene with the given index.
     pub fn scene(&self, index: usize) -> Option<&Scene> {
-        self.root.scenes[index]
+        Some(&self.root.scenes[index])
     }
 
     /// Returns an iterator over the scenes.

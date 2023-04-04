@@ -1,6 +1,12 @@
-use crate::Document;
+use crate::document::Document;
 
+#[derive(Debug, Clone)]
 pub struct Camera(json::Camera);
+impl Camera {
+    pub fn new(json: &json::Camera) -> Self {
+        Camera(json.clone())
+    }
+}
 
 /// A camera's projection.
 #[derive(Clone, Debug)]

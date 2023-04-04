@@ -1,4 +1,20 @@
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub use crate::prelude::*;
+
+// ---- Export ----------------------------------------------------------------
+mod export;
+pub use export::export;
+pub use export::export_to_glb;
+pub use export::export_to_gltf;
+
+// ---- Import ----------------------------------------------------------------
+mod glb_reader;
+mod gltf_reader;
+mod import;
+pub use import::import;
+
+// ---- Variant ---------------------------------------------------------------
+
+#[derive(Clone, Copy, Debug, Hash)]
 /// The type of output to write.
 pub enum Variant {
     /// Output standard glTF.
@@ -25,18 +41,6 @@ impl Variant {
         }
     }
 }
-
-// ---- Export ----------------------------------------------------------------
-mod export;
-pub use export::export;
-pub use export::export_to_glb;
-pub use export::export_to_gltf;
-
-// ---- Import ----------------------------------------------------------------
-mod glb_reader;
-mod gltf_reader;
-mod import;
-pub use import::import;
 
 // ---- Result & Errors ----------------------------------------------------------
 

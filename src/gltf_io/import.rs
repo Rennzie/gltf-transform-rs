@@ -1,26 +1,23 @@
 use super::glb_reader::GlbReader;
-use super::{Error, Result};
-use crate::buffer;
-use crate::document::Document;
-use crate::image;
+use super::{Document, Error, Result};
 use crate::properties::buffer::Blob;
+use crate::properties::image;
 use image_crate::ImageFormat::{Jpeg, Png};
-use json::Root as RootJson;
 use std::borrow::Cow;
 use std::path::Path;
 use std::{fs, io};
 
 use super::gltf_reader::GltfReader;
 
-type Import = (RootJson, Vec<buffer::Data>, Vec<image::Data>);
+type Import = (json::Root, Vec<Blob>, Vec<image::Data>);
 
 // Import a GlTF should:
-// 1. Read the file to a RootJson
+// 1. Read the file to a json::Root
 // 2. Read the external buffers to a list of buffers
 // 3. Read the external images to a list of images
 
 // Import a GlB should:
-// 1. Read the file to a RootJson and a the remaining blob
+// 1. Read the file to a json::Root and a the remaining blob
 // 2. Interpret the blob into a list of buffers and images
 // 3. Check for external resources and load them
 
@@ -47,16 +44,17 @@ where
         )
 }
 
-fn import_gltf<P>(base: P, reader: io::BufReader<fs::File>) -> Result<Document> {
+fn import_gltf(base: &Path, reader: io::BufReader<fs::File>) -> Result<Document> {
     let reader = GltfReader::from_reader(reader).unwrap();
     // let (root_json, buffers, images) = import_buffers_and_images(base, reader)?;
-    // let buffers = import_buffer_data(reader.root_json, base, blobs);
-    Ok(Document::from_json(reader.root_json, buffers))
+    let buffers = import_buffer_data(&reader.root_json, Some(base), reader.blob).unwrap();
+
+    Ok(Document::from_json(reader.root_json, Some(buffers)))
 }
 
 fn import_glb(base: &Path, reader: io::BufReader<fs::File>) -> Result<Document> {
     let glb = GlbReader::from_reader(reader).unwrap();
-    let root_json = json::deserialize::from_slice::<RootJson>(&glb.json).unwrap();
+    let root_json = json::deserialize::from_slice::<json::Root>(&glb.json).unwrap();
     let blob = glb.bin.take().map(|blob| blob.into_owned()); // not sure why this is necessary?
 
     let buffers = import_buffer_data(&root_json, Some(base), blob).unwrap();
@@ -64,7 +62,7 @@ fn import_glb(base: &Path, reader: io::BufReader<fs::File>) -> Result<Document> 
 }
 
 /// Represents the set of URI schemes the importer supports.
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 enum Scheme<'a> {
     /// `data:[<media type>];base64,<data>`.
     Data(Option<&'a str>, &'a str),
@@ -135,8 +133,9 @@ where
 }
 
 /// Import the buffer data referenced by a glTF document.
+/// If there is internal data, it will be used.
 pub fn import_buffer_data(
-    root_json: &RootJson,
+    root_json: &json::Root,
     base: Option<&Path>,
     mut blob: Option<Vec<u8>>,
 ) -> Result<Vec<Blob>> {
@@ -161,6 +160,7 @@ pub fn import_buffer_data(
     Ok(buffers)
 }
 
+#[cfg(feature = "image")]
 /// Import the image data referenced by a glTF document.
 pub fn import_image_data(
     document: &Document,
@@ -168,12 +168,12 @@ pub fn import_image_data(
     buffer_data: &[Blob],
 ) -> Result<Vec<image::Data>> {
     let mut images = Vec::new();
-    #[cfg(feature = "guess_mime_type")]
-    let guess_format = |encoded_image: &[u8]| match image_crate::guess_format(encoded_image) {
-        Ok(image_crate::ImageFormat::Png) => Some(Png),
-        Ok(image_crate::ImageFormat::Jpeg) => Some(Jpeg),
-        _ => None,
-    };
+    // #[cfg(feature = "guess_mime_type")]
+    // let guess_format = |encoded_image: &[u8]| match image_crate::guess_format(encoded_image) {
+    //     Ok(image_crate::ImageFormat::Png) => Some(Png),
+    //     Ok(image_crate::ImageFormat::Jpeg) => Some(Jpeg),
+    //     _ => None,
+    // };
     // #[cfg(not(feature = "guess_mime_type"))]
     let guess_format = |_encoded_image: &[u8]| None;
     for image in document.images() {
@@ -241,6 +241,7 @@ pub fn import_image_data(
 
 fn import_impl(GltfReader { root_json, blob }: GltfReader, base: Option<&Path>) -> Result<Import> {
     let buffer_data = import_buffer_data(&root_json, base, blob)?;
+    #[cfg(feature = "image")]
     let image_data = import_image_data(&root_json, base, &buffer_data)?;
     let import = (root_json, buffer_data, image_data);
     Ok(import)

@@ -1,17 +1,14 @@
-use json::Root as RootJson;
-
-use crate::Result;
-
 use super::glb_reader::GlbReader;
-use std::{fs, io, path::Path};
+use super::Result;
+use std::{fs, io, ops, path::Path};
 
 /// glTF JSON wrapper plus binary payload.
 #[derive(Clone, Debug)]
 pub struct GltfReader {
     /// Deserialised glTF JSON
-    pub root_json: RootJson,
-    // /// The glTF binary payload in the case of binary glTF.
-    // pub blob: Option<Vec<u8>>,
+    pub root_json: json::Root,
+    /// The glTF binary payload in the case of binary glTF.
+    pub blob: Option<Vec<u8>>,
 }
 
 impl GltfReader {
@@ -36,22 +33,23 @@ impl GltfReader {
         reader.seek(io::SeekFrom::Start(0))?;
 
         // NOTE: Weird indirection for reading a GLB!
-        // let (json, blob): (json::Root, Option<Vec<u8>>);
-        // if magic.starts_with(b"glTF") {
-        //     let mut glb = GlbReader::from_reader(reader)?;
-        //     // TODO: use `json::from_reader` instead of `json::from_slice`
-        //     json = json::deserialize::from_slice(&glb.json)?;
-        //     blob = glb.bin.take().map(|x| x.into_owned());
-        // } else {
-        // let json = json::deserialize::from_reader(reader)?;
-        //     blob = None;
-        // };
+
+        let (json, blob): (json::Root, Option<Vec<u8>>);
+        if magic.starts_with(b"glTF") {
+            let mut glb = GlbReader::from_reader(reader)?;
+            // TODO: use `json::from_reader` instead of `json::from_slice`
+            json = json::deserialize::from_slice(&glb.json)?;
+            blob = glb.bin.take().map(|x| x.into_owned());
+        } else {
+            let json = json::deserialize::from_reader(reader)?;
+            blob = None;
+        };
 
         let json = json::deserialize::from_reader(reader)?;
         // let document = Document::from_json_without_validation(json);
         Ok(GltfReader {
             root_json: json,
-            // blob,
+            blob,
         })
     }
 
@@ -80,7 +78,7 @@ impl GltfReader {
         // let document = Document::from_json_without_validation(json);
         Ok(GltfReader {
             root_json: json,
-            // blob,
+            blob,
         })
     }
 
@@ -92,15 +90,15 @@ impl GltfReader {
     }
 }
 
-// impl ops::Deref for Gltf {
-//     type Target = Document;
-//     fn deref(&self) -> &Self::Target {
-//         &self.root_json
-//     }
-// }
+impl ops::Deref for GlbReader<'_> {
+    type Target = json::Root;
+    fn deref(&self) -> &Self::Target {
+        &self
+    }
+}
 
-// impl ops::DerefMut for Gltf {
+// impl ops::DerefMut for GltfReader {
 //     fn deref_mut(&mut self) -> &mut Self::Target {
-//         &mut self.root_json
+//         &mut self
 //     }
 // }

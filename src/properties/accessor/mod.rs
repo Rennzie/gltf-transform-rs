@@ -1,12 +1,13 @@
 mod element;
 mod generic_accessor;
 
+use super::buffer::Blob;
+#[cfg(feature = "extensions")]
+use super::extension::Extension;
 use crate::properties::traits::{FromJson, ToJson};
 use element::*;
 use generic_accessor::GenericAccessor;
 use json::accessor::{ComponentType, Type as ElementType};
-
-use super::{buffer::Blob, extras_extensions::ExtrasExtension};
 
 // ---- Generic Accessor Aliases -----------
 // todo: add default to generic to make these more useful
@@ -39,12 +40,13 @@ pub type Mat4F32 = GenericAccessor<f32, Mat4<f32>>;
 //             normalized: false,
 //             sparse: false,
 //             name: None,
-//             extras_extensions: ExtrasExtension::default(),
+//             extension: ExtrasExtension::default(),
 //         }
 //     }
 // }
 
 // ---- Accessor Enum ---------------------
+#[derive(Clone, Debug)]
 pub enum Accessor {
     ScalarU16(ScalarU16),
     ScalarF32(ScalarF32),
@@ -74,7 +76,7 @@ pub enum Accessor {
 pub fn create_accessor_from_json(
     accessor_json: &json::Accessor,
     root: &json::Root,
-    buffer: &[Data],
+    buffer: &[Blob],
 ) -> Accessor {
     let component_type = accessor_json.component_type.unwrap().0;
     match component_type {
@@ -108,7 +110,7 @@ fn create_u16_accessor_from_json(
 fn create_f32_accessor_from_json(
     accessor_json: &json::Accessor,
     root: &json::Root,
-    buffer: Blob,
+    buffer: &[Blob],
 ) -> Accessor {
     let element_type = accessor_json.type_.unwrap();
     match element_type {

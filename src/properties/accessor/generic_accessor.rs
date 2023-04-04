@@ -1,12 +1,14 @@
 use super::element::Element;
 use crate::properties::buffer::Blob;
+#[cfg(feature = "extensions")]
+use crate::properties::extension::Extension;
 use crate::properties::traits::{FromJson, ToJson};
 use bytemuck::Pod;
-use json::accessor::Type as ElementType;
+use json::accessor::{ComponentType, Type as ElementType};
 use json::{Accessor as JsonAccessor, Index, Value};
 use std::marker::PhantomData;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct GenericAccessor<CT, ET>
 where
     CT: Pod,
@@ -35,7 +37,11 @@ where
     pub name: Option<String>,
 
     /// Optional application specific data.
-    pub extras_extensions: ExtrasExtension,
+    pub extras: json::Extras,
+
+    #[cfg(feature = "extensions")]
+    /// Optional application specific data.
+    pub extension: Extension,
 }
 
 impl<CT, ET> FromJson<JsonAccessor> for GenericAccessor<CT, ET>
@@ -86,10 +92,9 @@ where
             normalized: accessor_json.normalized,
             sparse: accessor_json.sparse.is_some(),
             name: accessor_json.name.clone(),
-            extras_extensions: ExtrasExtension::from_json(
-                &accessor_json.extras,
-                &accessor_json.extensions,
-            ),
+            extras: accessor_json.extras.clone(),
+            #[cfg(feature = "extensions")]
+            extension: Extension::from_json(&accessor_json.extensions),
         }
     }
 }
@@ -145,15 +150,14 @@ where
                     None
                 },
                 byte_offset: 0,
-                component_type: json::validation::Checked::Valid(GenericComponentType(
-                    self.component_type,
-                )),
+                component_type: json::validation::Checked::Valid(
+                    json::accessor::GenericComponentType(self.component_type),
+                ),
                 count: self.get_count() as u32,
                 name: self.name.clone(),
                 normalized: self.normalized,
                 sparse: None,
                 type_: json::validation::Checked::Valid(self.element_type),
-                name: None,
                 extras: None,     // TODO: handle extras
                 extensions: None, // TODO: handle extensions
                 min: self.get_min_to_json(),

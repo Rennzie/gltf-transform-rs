@@ -1,10 +1,10 @@
-use crate::prelude::*;
+pub use crate::prelude::*;
 
 pub mod accessor;
 pub mod animation;
 pub mod buffer;
 pub mod camera;
-pub mod extras_extensions;
+pub mod extension;
 pub mod image;
 pub mod material;
 pub mod mesh;

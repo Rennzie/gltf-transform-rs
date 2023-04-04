@@ -1,12 +1,12 @@
-use crate::buffer::Data;
-
-use super::accessor::{create_accessor_from_json, Accessor};
-use super::extras_extensions::ExtrasExtension;
-use super::*;
+#[cfg(feature = "extensions")]
+use super::extensions::Extension;
+use super::{accessor::create_accessor_from_json, buffer::Blob};
+use crate::prelude::*;
 use rayon::prelude::*;
 
 /// The Root of the glTF asset.
 /// All properties are directly accessible form the root
+#[derive(Debug, Clone)]
 pub struct Root {
     /// Metadata about the glTF asset.
     pub asset: json::Asset,
@@ -45,12 +45,15 @@ pub struct Root {
     // An array of images.
     pub images: Vec<Image>,
 
+    pub extras: json::Extras,
+
+    #[cfg(feature = "extensions")]
     /// Extras and extensions.
-    extras_extensions: Option<ExtrasExtension>,
+    extension: Option<Extension>,
 }
 
 impl Root {
-    pub fn from_json(root_json: json::Root, buffer: Vec<Data>) -> Self {
+    pub fn from_json(root_json: json::Root, buffer: Vec<Blob>) -> Self {
         Root {
             asset: root_json.asset.clone(),
             default_scene: root_json.scene.map(|scene| scene.value()),
@@ -62,49 +65,51 @@ impl Root {
             animations: root_json
                 .animations
                 .par_iter()
-                .map(|animation| Animation(animation.clone()))
+                .map(|animation| Animation::new(animation))
                 .collect(),
             cameras: root_json
                 .cameras
                 .par_iter()
-                .map(|camera| Camera(camera.clone()))
+                .map(|camera| Camera::new(camera))
                 .collect(),
             materials: root_json
                 .materials
                 .par_iter()
-                .map(|material| Material(material.clone()))
+                .map(|material| Material::new(material))
                 .collect(),
             meshes: root_json
                 .meshes
                 .par_iter()
-                .map(|mesh| Mesh(mesh.clone()))
+                .map(|mesh| Mesh::new(mesh))
                 .collect(),
             nodes: root_json
                 .nodes
                 .par_iter()
-                .map(|node| Node(node.clone()))
+                .map(|node| Node::new(node))
                 .collect(),
             scenes: root_json
                 .scenes
                 .par_iter()
-                .map(|scene| Scene(scene.clone()))
+                .map(|scene| Scene::new(scene))
                 .collect(),
             skins: root_json
                 .skins
                 .par_iter()
-                .map(|skin| Skin(skin.clone()))
+                .map(|skin| Skin::new(skin))
                 .collect(),
             textures: root_json
                 .textures
                 .par_iter()
-                .map(|texture| Texture(texture.clone()))
+                .map(|texture| Texture::new(texture))
                 .collect(),
             images: root_json
                 .images
                 .par_iter()
-                .map(|image| Image(image.clone()))
+                .map(|image| Image::new(image))
                 .collect(),
-            extras_extensions: None,
+            extras: root_json.extras,
+            #[cfg(feature = "extensions")]
+            extension: None,
         }
     }
 
@@ -121,8 +126,9 @@ impl Root {
         }
     }
 
-    pub fn get_extras_extensions(&self) -> Option<&ExtrasExtension> {
-        self.extras_extensions.as_ref()
+    #[cfg(feature = "extensions")]
+    pub fn get_extension(&self) -> Option<&Extension> {
+        self.extension.as_ref()
     }
 }
 
@@ -145,7 +151,9 @@ impl Default for Root {
             skins: Vec::new(),
             textures: Vec::new(),
             images: Vec::new(),
-            extras_extensions: None,
+            extras: json::Extras::default(),
+            #[cfg(feature = "extensions")]
+            extension: None,
         }
     }
 }

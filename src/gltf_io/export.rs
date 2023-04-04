@@ -1,10 +1,11 @@
+use crate::properties::buffer::{Blob, Source};
+use crate::utils::{align_to_multiple_of_four, to_padded_byte_vector};
+
+use super::glb_reader::{GlbReader, Header};
+use super::{Document, Error, Variant};
 use std::borrow::Cow;
 use std::io::{ErrorKind, Write};
 use std::{fs, path};
-
-use crate::{Document, Error};
-
-use super::Variant;
 
 /// Export a glTF document
 /// TODO: support images
@@ -12,7 +13,7 @@ pub fn export(
     output: Variant,
     path: &str,
     document: Document,
-    buffers: Vec<Data>,
+    buffers: Vec<Blob>,
     // _image_buffers: Vec<image::Data>,
 ) -> Result<(), Error> {
     match output {
@@ -25,7 +26,7 @@ pub fn export(
 pub fn export_to_gltf(
     path: &str,
     document: Document,
-    buffers: Vec<Data>,
+    buffers: Vec<Blob>,
     // _image_buffers: Vec<image::Data>,
 ) -> Result<(), Error> {
     // write each buffer to a file
@@ -72,7 +73,7 @@ pub fn export_to_gltf(
 pub fn export_to_glb(
     path: &str,
     document: Document,
-    buffers: Vec<Data>,
+    buffers: Vec<Blob>,
     // _image_buffers: Vec<image::Data>,
 ) -> Result<(), Error> {
     let glb_path = path::Path::new(&path).with_extension("glb");
@@ -100,8 +101,8 @@ pub fn export_to_glb(
     let mut json_offset = json_string.len() as u32;
     align_to_multiple_of_four(&mut json_offset);
 
-    let glb = binary::Glb {
-        header: binary::Header {
+    let glb = GlbReader {
+        header: Header {
             magic: *b"glTF",
             version: 2,
             length: json_offset + blob.len() as u32,

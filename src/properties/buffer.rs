@@ -1,8 +1,6 @@
-use std::{mem, ops};
-
 use crate::document::Document;
-
 pub use json::buffer::Target;
+use std::ops;
 
 /// A buffer points to binary data representing geometry, animations, or skins.
 #[derive(Clone, Debug)]
@@ -22,7 +20,7 @@ pub struct Buffer<'a> {
 #[derive(Clone, Debug)]
 pub struct View<'a> {
     /// The parent `Document` struct.
-    document: &'a Document,
+    root_json: &'a json::Root,
 
     /// The corresponding JSON index.
     index: usize,
@@ -32,7 +30,7 @@ pub struct View<'a> {
 
     /// The parent `Buffer`.
     #[allow(dead_code)]
-    parent: Buffer<'a>,
+    parent: json::Buffer,
 }
 
 /// Describes a buffer data source.
@@ -102,10 +100,10 @@ impl<'a> Buffer<'a> {
 
 impl<'a> View<'a> {
     /// Constructs a `View`.
-    pub(crate) fn new(document: &'a Document, index: usize, json: &'a json::buffer::View) -> Self {
-        let parent = document.buffers().nth(json.buffer.value()).unwrap();
+    pub(crate) fn new(root: &'a json::Root, index: usize, json: &'a json::buffer::View) -> Self {
+        let parent = root.buffers[json.buffer.value()];
         Self {
-            document,
+            root_json: root,
             index,
             json,
             parent,
@@ -119,10 +117,7 @@ impl<'a> View<'a> {
 
     /// Returns the parent `Buffer`.
     pub fn buffer(&self) -> Buffer<'a> {
-        self.document
-            .buffers()
-            .nth(self.json.buffer.value())
-            .unwrap()
+        self.root_json.buffers[self.json.buffer.value()]
     }
 
     /// Returns the length of the buffer view in bytes.
@@ -163,24 +158,4 @@ impl<'a> View<'a> {
     pub fn extras(&self) -> &'a json::Extras {
         &self.json.extras
     }
-}
-
-// Buffers utils
-
-/// Align a number to a multiple of four.
-pub fn align_to_multiple_of_four(n: &mut u32) {
-    *n = (*n + 3) & !3;
-}
-
-/// Pads a vector of bytes to a multiple of four.
-pub fn to_padded_byte_vector<T>(vec: Vec<T>) -> Vec<u8> {
-    let byte_length = vec.len() * mem::size_of::<T>();
-    let byte_capacity = vec.capacity() * mem::size_of::<T>();
-    let alloc = vec.into_boxed_slice();
-    let ptr = Box::<[T]>::into_raw(alloc) as *mut u8;
-    let mut new_vec = unsafe { Vec::from_raw_parts(ptr, byte_length, byte_capacity) };
-    while new_vec.len() % 4 != 0 {
-        new_vec.push(0); // pad to multiple of four bytes
-    }
-    new_vec
 }
