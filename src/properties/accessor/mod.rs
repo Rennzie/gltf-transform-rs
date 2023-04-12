@@ -135,10 +135,10 @@ mod tests {
 
     #[test]
     fn test_round_trip() {
-        let (doc, buffer, _) = import("/Users/seanrennie/Development/PERSONAL/gltf-transform-rs/tests/minimal_accessor_min_max.gltf").unwrap();
-        let root = doc.0;
+        let gltf = import("/Users/seanrennie/Development/PERSONAL/gltf-transform-rs/tests/minimal_accessor_min_max.gltf").unwrap();
+        let root = gltf.root;
         let json_accessor = &root.accessors[1];
-        let accessor = create_accessor_from_json(json_accessor, &root, &buffer);
+        let accessor = create_accessor_from_json(json_accessor, &root, &gltf.buffers);
 
         let (accessor_to_json, _view_to_json) = match accessor {
             Accessor::ScalarU16(accessor) => accessor.to_json(0),
@@ -160,10 +160,10 @@ mod tests {
 
     #[test]
     fn test_scalar_u16_accessor() {
-        let (doc, buffer, _) = import("/Users/seanrennie/Development/PERSONAL/gltf-transform-rs/tests/minimal_accessor_min_max.gltf").unwrap();
-        let root = doc.0;
+        let gltf = import("/Users/seanrennie/Development/PERSONAL/gltf-transform-rs/tests/minimal_accessor_min_max.gltf").unwrap();
+        let root = gltf.root;
         let json_accessor = &root.accessors[0];
-        let accessor = create_accessor_from_json(json_accessor, &root, &buffer);
+        let accessor = create_accessor_from_json(json_accessor, &root, &gltf.buffers);
 
         match accessor {
             Accessor::ScalarU16(accessor) => {
@@ -181,10 +181,10 @@ mod tests {
 
     #[test]
     fn test_vec3_f32_accessor() {
-        let (doc, buffer, _) = import("/Users/seanrennie/Development/PERSONAL/gltf-transform-rs/tests/minimal_accessor_min_max.gltf").unwrap();
-        let root = doc.0;
+        let gltf = import("/Users/seanrennie/Development/PERSONAL/gltf-transform-rs/tests/minimal_accessor_min_max.gltf").unwrap();
+        let root = gltf.root;
         let json_accessor = &root.accessors[1];
-        let accessor = create_accessor_from_json(json_accessor, &root, &buffer);
+        let accessor = create_accessor_from_json(json_accessor, &root, &gltf.buffers);
 
         match accessor {
             Accessor::Vec3F32(accessor) => {

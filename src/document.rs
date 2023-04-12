@@ -1,24 +1,14 @@
-use crate::properties::buffer;
-use crate::properties::{
-    Accessor, Animation, Camera, Image, Material, Mesh, Node, Root, Scene, Skin, Texture,
-};
+use crate::{gltf::GlTF, prelude::*};
 
 #[derive(Debug, Clone)]
-pub struct Document {
-    pub root: Root,
+pub struct Document<'a> {
+    pub root: Root<'a>,
 }
 
-impl Document {
-    pub fn from_json(root_json: json::Root, blob: Option<Vec<buffer::Blob>>) -> Self {
-        if let Some(buffer) = blob {
-            Self {
-                root: Root::from_json(root_json, buffer),
-            }
-        } else {
-            // TODO: Fix the empty buffer case
-            Self {
-                root: Root::from_json(root_json, Vec::new()),
-            }
+impl Document<'_> {
+    pub fn from_gltf(gltf: GlTF) -> Self {
+        Self {
+            root: Root::from_json(gltf.root, gltf.buffers),
         }
     }
 

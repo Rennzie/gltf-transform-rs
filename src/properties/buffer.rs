@@ -1,37 +1,7 @@
-use crate::document::Document;
+use crate::gltf_io::UriReader;
+use crate::gltf_io::{Error, Result};
 pub use json::buffer::Target;
-use std::ops;
-
-/// A buffer points to binary data representing geometry, animations, or skins.
-#[derive(Clone, Debug)]
-pub struct Buffer<'a> {
-    /// The parent `Document` struct.
-    #[allow(dead_code)]
-    document: &'a Document,
-
-    /// The corresponding JSON index.
-    index: usize,
-
-    /// The corresponding JSON struct.
-    json: &'a json::buffer::Buffer,
-}
-
-/// A view into a buffer generally representing a subset of the buffer.
-#[derive(Clone, Debug)]
-pub struct View<'a> {
-    /// The parent `Document` struct.
-    root_json: &'a json::Root,
-
-    /// The corresponding JSON index.
-    index: usize,
-
-    /// The corresponding JSON struct.
-    json: &'a json::buffer::View,
-
-    /// The parent `Buffer`.
-    #[allow(dead_code)]
-    parent: json::Buffer,
-}
+use std::{ops, path::Path};
 
 /// Describes a buffer data source.
 #[derive(Clone, Debug)]
@@ -54,108 +24,96 @@ impl ops::Deref for Blob {
     }
 }
 
-impl<'a> Buffer<'a> {
-    /// Constructs a `Buffer`.
-    pub(crate) fn new(
-        document: &'a Document,
-        index: usize,
-        json: &'a json::buffer::Buffer,
-    ) -> Self {
+/// A buffer points to binary data representing geometry, animations, or skins.
+#[derive(Clone, Debug)]
+pub struct Buffer<'a> {
+    pub name: Option<String>,
+    pub source: Source<'a>,
+    pub extras: json::Extras,
+    pub blob: Blob,
+    #[cfg(feature = "extensions")]
+    pub extensions: properties::Extensions,
+}
+
+impl Default for Buffer<'_> {
+    fn default() -> Self {
         Self {
-            document,
-            index,
-            json,
+            name: None,
+            source: Source::Bin,
+            extras: Default::default(),
+            blob: Blob(Vec::new()),
+            #[cfg(feature = "extensions")]
+            extensions: Default::default(),
         }
     }
+}
 
-    /// Returns the internal JSON index.
-    pub fn index(&self) -> usize {
-        self.index
+impl<'a> Buffer<'a> {
+    pub fn from_json(
+        json: &json::Buffer,
+        mut blob: Option<Vec<u8>>,
+        index: usize,
+        base: Option<&Path>,
+    ) -> Result<Self> {
+        let byte_length = json.byte_length;
+        let source = match json.uri.as_deref() {
+            Some(uri) => Source::Uri(uri),
+            None => Source::Bin,
+        };
+
+        let mut data = match source {
+            Source::Uri(uri) => UriReader::read(base, uri),
+            Source::Bin => blob.take().ok_or(Error::MissingBlob), // not sure about this. Are we taking the correct amount of blob?
+        }?;
+
+        if data.len() < byte_length as usize {
+            return Err(Error::BufferLength {
+                buffer: index,
+                expected: byte_length as usize,
+                actual: data.len(),
+            });
+        }
+        while data.len() % 4 != 0 {
+            data.push(0);
+        }
+
+        Ok(Self {
+            name: json.name.clone(),
+            source,
+            blob: Blob(data),
+            extras: json.extras.clone(),
+            #[cfg(feature = "extensions")]
+            extensions: properties::Extensions::from_json(&json.extensions),
+        })
+    }
+
+    /// Returns the blob while consuming the buffer.
+    pub fn into_blob(self) -> Blob {
+        self.blob
     }
 
     /// Returns the buffer data source.
     pub fn source(&self) -> Source<'a> {
-        if let Some(uri) = self.json.uri.as_deref() {
-            Source::Uri(uri)
-        } else {
-            Source::Bin
-        }
+        self.source
+    }
+
+    /// Returns a borrowed mutable reference to the buffer data source.
+    pub fn source_mut(&mut self) -> &mut Source<'a> {
+        &mut self.source
     }
 
     /// The length of the buffer in bytes.
     pub fn length(&self) -> usize {
-        self.json.byte_length as usize
+        self.blob.0.len()
     }
 
     /// Optional user-defined name for this object.
     pub fn name(&self) -> Option<&'a str> {
-        self.json.name.as_deref()
+        self.name.as_deref()
     }
 
     /// Optional application specific data.
     pub fn extras(&self) -> &'a json::Extras {
-        &self.json.extras
-    }
-}
-
-impl<'a> View<'a> {
-    /// Constructs a `View`.
-    pub(crate) fn new(root: &'a json::Root, index: usize, json: &'a json::buffer::View) -> Self {
-        let parent = root.buffers[json.buffer.value()];
-        Self {
-            root_json: root,
-            index,
-            json,
-            parent,
-        }
-    }
-
-    /// Returns the internal JSON index.
-    pub fn index(&self) -> usize {
-        self.index
-    }
-
-    /// Returns the parent `Buffer`.
-    pub fn buffer(&self) -> Buffer<'a> {
-        self.root_json.buffers[self.json.buffer.value()]
-    }
-
-    /// Returns the length of the buffer view in bytes.
-    pub fn length(&self) -> usize {
-        self.json.byte_length as usize
-    }
-
-    /// Returns the offset into the parent buffer in bytes.
-    pub fn offset(&self) -> usize {
-        self.json.byte_offset.unwrap_or(0) as usize
-    }
-
-    /// Returns the stride in bytes between vertex attributes or other interleavable
-    /// data. When `None`, data is assumed to be tightly packed.
-    pub fn stride(&self) -> Option<usize> {
-        self.json.byte_stride.and_then(|x| {
-            // Treat byte_stride == 0 same as not specifying stride.
-            // This is technically a validation error, but best way we can handle it here
-            if x == 0 {
-                None
-            } else {
-                Some(x as usize)
-            }
-        })
-    }
-
-    /// Optional user-defined name for this object.
-    pub fn name(&self) -> Option<&'a str> {
-        self.json.name.as_deref()
-    }
-
-    /// Optional target the buffer should be bound to.
-    pub fn target(&self) -> Option<Target> {
-        self.json.target.map(|target| target.unwrap())
-    }
-
-    /// Optional application specific data.
-    pub fn extras(&self) -> &'a json::Extras {
-        &self.json.extras
+        &self.extras
     }
 }

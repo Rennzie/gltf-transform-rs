@@ -7,7 +7,12 @@ use rayon::prelude::*;
 /// The Root of the glTF asset.
 /// All properties are directly accessible form the root
 #[derive(Debug, Clone)]
-pub struct Root {
+pub struct Root<'a> {
+    /// The a buffer where accessor data will be written at export.
+    /// Set the buffers Source to determine how that buffer is written.
+    /// By default the root has one buffer which all accessors will reference after import.
+    buffers: Vec<Buffer<'a>>,
+
     /// Metadata about the glTF asset.
     pub asset: json::Asset,
     // Reference to the default scene.
@@ -15,10 +20,7 @@ pub struct Root {
 
     /// An array of accessors.
     pub accessors: Vec<Accessor>,
-    // /// An array of buffers.
-    //  buffers: Vec<Buffer>,
-    // /// An array of buffer views.
-    //  buffer_views: Vec<buffer::View>,
+
     /// An array of keyframe animations.
     pub animations: Vec<Animation>,
 
@@ -52,9 +54,10 @@ pub struct Root {
     extension: Option<Extension>,
 }
 
-impl Root {
+impl Root<'_> {
     pub fn from_json(root_json: json::Root, buffer: Vec<Blob>) -> Self {
         Root {
+            buffers: vec![Buffer::default()],
             asset: root_json.asset.clone(),
             default_scene: root_json.scene.map(|scene| scene.value()),
             accessors: root_json
@@ -70,7 +73,7 @@ impl Root {
             cameras: root_json
                 .cameras
                 .par_iter()
-                .map(|camera| Camera::new(camera))
+                .map(|camera| Camera::from_json(camera))
                 .collect(),
             materials: root_json
                 .materials
@@ -133,7 +136,7 @@ impl Root {
 }
 
 // TODO: revisit the root implementation
-impl Default for Root {
+impl Default for Root<'_> {
     fn default() -> Self {
         Root {
             asset: json::Asset {
@@ -141,6 +144,7 @@ impl Default for Root {
                 ..Default::default()
             },
             default_scene: None,
+            buffers: vec![Buffer::default()],
             accessors: Vec::new(),
             animations: Vec::new(),
             cameras: Vec::new(),

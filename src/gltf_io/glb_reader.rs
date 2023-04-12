@@ -2,6 +2,8 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::borrow::Cow;
 use std::{fmt, io, mem};
 
+use super::Error;
+
 /// Represents a Glb loader error.
 #[derive(Debug)]
 pub enum BinError {
@@ -46,7 +48,7 @@ pub struct GlbReader<'a> {
 
 impl<'a> GlbReader<'a> {
     /// Writes binary glTF to a writer.
-    pub fn to_writer<W>(&self, mut writer: W) -> Result<(), crate::Error>
+    pub fn to_writer<W>(&self, mut writer: W) -> Result<(), BinError>
     where
         W: io::Write,
     {
@@ -100,7 +102,7 @@ impl<'a> GlbReader<'a> {
     }
 
     /// Writes binary glTF to a byte vector.
-    pub fn to_vec(&self) -> Result<Vec<u8>, crate::Error> {
+    pub fn to_vec(&self) -> Result<Vec<u8>, BinError> {
         let mut length = mem::size_of::<Header>() + mem::size_of::<ChunkHeader>() + self.json.len();
         align_to_multiple_of_four(&mut length);
         if let Some(bin) = self.bin.as_ref() {

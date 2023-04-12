@@ -3,6 +3,7 @@
 // #![cfg_attr(docsrs, feature(doc_cfg))]
 
 pub mod document;
+pub mod gltf;
 pub mod gltf_io;
 mod math;
 pub mod properties;

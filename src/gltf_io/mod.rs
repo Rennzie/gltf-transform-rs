@@ -10,7 +10,11 @@ pub use export::export_to_gltf;
 mod glb_reader;
 mod gltf_reader;
 mod import;
+mod uri_reader;
 pub use import::import;
+pub use uri_reader::UriReader;
+
+use self::glb_reader::BinError;
 
 // ---- Variant ---------------------------------------------------------------
 
@@ -96,4 +100,70 @@ pub enum Error {
 
     /// glTF validation error.
     Validation(Vec<(json::Path, json::validation::Error)>),
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Error::Base64(ref e) => e.fmt(f),
+            Error::Binary(ref e) => e.fmt(f),
+            Error::BufferLength {
+                buffer,
+                expected,
+                actual,
+            } => {
+                write!(
+                    f,
+                    "buffer {}: expected {} bytes but received {} bytes",
+                    buffer, expected, actual
+                )
+            }
+            Error::Deserialize(ref e) => e.fmt(f),
+            Error::Io(ref e) => e.fmt(f),
+            Error::Image(ref e) => e.fmt(f),
+            Error::MissingBlob => write!(f, "missing binary portion of binary glTF"),
+            Error::ExternalReferenceInSliceImport => {
+                write!(f, "external reference in slice only import")
+            }
+            Error::UnsupportedImageEncoding => write!(f, "unsupported image encoding"),
+            Error::UnsupportedImageFormat(image) => {
+                write!(f, "unsupported image format: {:?}", image.color())
+            }
+            Error::UnsupportedScheme => write!(f, "unsupported URI scheme"),
+            Error::Validation(ref xs) => {
+                write!(f, "invalid glTF:")?;
+                for &(ref path, ref error) in xs {
+                    write!(f, " {}: {};", path, error)?;
+                }
+                Ok(())
+            }
+            Error::InvalidExtension => write!(f, "invalid extension"),
+        }
+    }
+}
+
+impl std::error::Error for Error {}
+
+impl From<std::io::Error> for Error {
+    fn from(err: std::io::Error) -> Self {
+        Error::Io(err)
+    }
+}
+
+impl From<BinError> for Error {
+    fn from(err: BinError) -> Self {
+        Error::Binary(err)
+    }
+}
+
+impl From<json::Error> for Error {
+    fn from(err: json::Error) -> Self {
+        Error::Deserialize(err)
+    }
+}
+
+impl From<Vec<(json::Path, json::validation::Error)>> for Error {
+    fn from(errs: Vec<(json::Path, json::validation::Error)>) -> Self {
+        Error::Validation(errs)
+    }
 }
