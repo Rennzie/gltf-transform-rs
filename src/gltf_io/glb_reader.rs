@@ -2,8 +2,6 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::borrow::Cow;
 use std::{fmt, io, mem};
 
-use super::Error;
-
 /// Represents a Glb loader error.
 #[derive(Debug)]
 pub enum BinError {
@@ -33,6 +31,13 @@ pub enum BinError {
     ChunkType(ChunkType),
     /// Unknown chunk type.
     UnknownChunkType([u8; 4]),
+}
+
+impl std::error::Error for BinError {}
+impl From<std::io::Error> for BinError {
+    fn from(err: std::io::Error) -> Self {
+        BinError::Io(err)
+    }
 }
 
 /// Binary glTF contents.
@@ -326,5 +331,3 @@ impl fmt::Display for BinError {
         )
     }
 }
-
-impl ::std::error::Error for BinError {}

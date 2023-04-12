@@ -12,7 +12,7 @@ pub mod utils;
 // ---- Core ---------------------------------------------------------
 pub mod prelude {
     pub use crate::document::Document;
-    pub use crate::gltf_io::export;
+    // pub use crate::gltf_io::export;
     pub use crate::gltf_io::import;
     pub use crate::properties::accessor::Accessor;
     pub use crate::properties::animation::Animation;

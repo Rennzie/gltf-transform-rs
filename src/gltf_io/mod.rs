@@ -2,9 +2,9 @@ pub use crate::prelude::*;
 
 // ---- Export ----------------------------------------------------------------
 mod export;
-pub use export::export;
-pub use export::export_to_glb;
-pub use export::export_to_gltf;
+// pub use export::export;
+// pub use export::export_to_glb;
+// pub use export::export_to_gltf;
 
 // ---- Import ----------------------------------------------------------------
 mod glb_reader;
@@ -50,6 +50,8 @@ impl Variant {
 
 /// Result type for convenience.
 pub type Result<T> = std::result::Result<T, Error>;
+
+// TODO: Better errors following this example: https://kerkour.com/rust-error-handling
 
 /// Represents a runtime error.
 #[derive(Debug)]
