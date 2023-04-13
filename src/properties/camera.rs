@@ -1,6 +1,6 @@
 /// A camera's projection.
 #[derive(Clone, Debug)]
-enum Projection {
+pub enum Projection {
     /// Describes an orthographic projection.
     Orthographic(Orthographic),
 
@@ -104,7 +104,7 @@ pub struct Perspective {
 
 impl Perspective {
     pub fn from_json(json: &Option<json::camera::Perspective>) -> Self {
-        let json = json.unwrap();
+        let json = json.as_ref().unwrap();
         Self {
             aspect_ratio: json.aspect_ratio,
             yfov: json.yfov,

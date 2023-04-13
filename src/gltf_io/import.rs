@@ -10,11 +10,11 @@ where
     P: AsRef<Path>,
 {
     let base = path.as_ref().parent().unwrap_or_else(|| Path::new("./"));
-    let file = fs::File::open(path).map_err(Error::Io)?;
+    let file = fs::File::open(path.as_ref()).map_err(Error::Io)?;
     let reader = io::BufReader::new(file);
 
-    let reader = GltfReader::from_reader(reader).unwrap();
-    let buffers = import_buffer_data(&reader.root_json, Some(base), reader.blob).unwrap();
+    let mut reader = GltfReader::from_reader(reader).unwrap();
+    let buffers = import_buffer_data(&reader.root_json, Some(base), &mut reader.blob).unwrap();
     // TODO: Import images
 
     Ok(GlTF::new(reader.root_json, buffers))
@@ -26,7 +26,7 @@ where
 pub fn import_buffer_data(
     root_json: &json::Root,
     base: Option<&Path>,
-    mut blob: Option<Vec<u8>>,
+    blob: &mut Option<Vec<u8>>,
 ) -> Result<Vec<Blob>> {
     let mut buffer_blobs = Vec::with_capacity(root_json.buffers.len());
 

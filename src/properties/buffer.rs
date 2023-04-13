@@ -4,7 +4,7 @@ pub use json::buffer::Target;
 use std::{ops, path::Path};
 
 /// Describes a buffer data source.
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Source<'a> {
     /// Buffer data is contained in the `BIN` section of binary glTF.
     Bin,
@@ -50,8 +50,8 @@ impl Default for Buffer<'_> {
 
 impl<'a> Buffer<'a> {
     pub fn from_json(
-        json: &json::Buffer,
-        mut blob: Option<Vec<u8>>,
+        json: &'a json::Buffer, //NOTE: Are we keeping the json around?
+        blob: &mut Option<Vec<u8>>,
         index: usize,
         base: Option<&Path>,
     ) -> Result<Self> {
@@ -93,8 +93,8 @@ impl<'a> Buffer<'a> {
     }
 
     /// Returns the buffer data source.
-    pub fn source(&self) -> Source<'a> {
-        self.source
+    pub fn source(&self) -> &Source<'a> {
+        &self.source
     }
 
     /// Returns a borrowed mutable reference to the buffer data source.
@@ -108,12 +108,12 @@ impl<'a> Buffer<'a> {
     }
 
     /// Optional user-defined name for this object.
-    pub fn name(&self) -> Option<&'a str> {
+    pub fn name(&self) -> Option<&str> {
         self.name.as_deref()
     }
 
     /// Optional application specific data.
-    pub fn extras(&self) -> &'a json::Extras {
+    pub fn extras(&self) -> &json::Extras {
         &self.extras
     }
 }

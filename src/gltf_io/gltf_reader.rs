@@ -35,15 +35,13 @@ impl GltfReader {
         let (json, blob): (json::Root, Option<Vec<u8>>);
         if magic.starts_with(b"glTF") {
             let mut glb = GlbReader::from_reader(reader)?;
-            json = json::deserialize::from_reader(reader)?;
+            json = json::deserialize::from_slice(&glb.json)?;
             blob = glb.bin.take().map(|x| x.into_owned());
         } else {
-            let json = json::deserialize::from_reader(reader)?;
+            json = json::deserialize::from_reader(reader)?;
             blob = None;
         };
 
-        let json = json::deserialize::from_reader(reader)?;
-        // let document = Document::from_json_without_validation(json);
         Ok(GltfReader {
             root_json: json,
             blob,
@@ -77,12 +75,12 @@ impl GltfReader {
     }
 }
 
-impl ops::Deref for GlbReader<'_> {
-    type Target = json::Root;
-    fn deref(&self) -> &Self::Target {
-        &self
-    }
-}
+// impl ops::Deref for GlbReader<'_> {
+//     type Target = json::Root;
+//     fn deref(&self) -> &Self::Target {
+//         &self
+//     }
+// }
 
 // impl ops::DerefMut for GltfReader {
 //     fn deref_mut(&mut self) -> &mut Self::Target {
