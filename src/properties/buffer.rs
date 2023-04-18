@@ -1,3 +1,4 @@
+use super::extension::Extension;
 use crate::gltf_io::UriReader;
 use crate::gltf_io::{Error, Result};
 pub use json::buffer::Target;
@@ -32,7 +33,7 @@ pub struct Buffer<'a> {
     pub extras: json::Extras,
     pub blob: Blob,
     #[cfg(feature = "extensions")]
-    pub extensions: properties::Extensions,
+    pub extensions: Option<Extension<json::extensions::buffer::Buffer>>,
 }
 
 impl Default for Buffer<'_> {
@@ -43,7 +44,7 @@ impl Default for Buffer<'_> {
             extras: Default::default(),
             blob: Blob(Vec::new()),
             #[cfg(feature = "extensions")]
-            extensions: Default::default(),
+            extensions: None,
         }
     }
 }
@@ -83,7 +84,10 @@ impl<'a> Buffer<'a> {
             blob: Blob(data),
             extras: json.extras.clone(),
             #[cfg(feature = "extensions")]
-            extensions: properties::Extensions::from_json(&json.extensions),
+            extensions: json
+                .extensions
+                .as_ref()
+                .map(|ext| Extension::from_json(ext.clone(), None, None)),
         })
     }
 

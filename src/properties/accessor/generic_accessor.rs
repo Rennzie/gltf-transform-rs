@@ -41,7 +41,7 @@ where
 
     #[cfg(feature = "extensions")]
     /// Optional application specific data.
-    pub extension: Extension,
+    pub extension: Option<Extension<json::extensions::accessor::Accessor>>,
 }
 
 impl<CT, ET> FromJson<JsonAccessor> for GenericAccessor<CT, ET>
@@ -94,7 +94,10 @@ where
             name: accessor_json.name.clone(),
             extras: accessor_json.extras.clone(),
             #[cfg(feature = "extensions")]
-            extension: Extension::from_json(&accessor_json.extensions),
+            extension: accessor_json
+                .extensions
+                .as_ref()
+                .map(|ext| Extension::from_json(ext.clone(), None, None)),
         }
     }
 }

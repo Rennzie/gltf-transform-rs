@@ -1,3 +1,5 @@
+use super::extension::Extension;
+
 /// A camera's projection.
 #[derive(Clone, Debug)]
 pub enum Projection {
@@ -17,7 +19,7 @@ pub struct Camera {
     pub extras: json::Extras,
 
     #[cfg(feature = "extensions")]
-    pub extensions: properties::Extensions,
+    pub extensions: Option<Extension<json::extensions::camera::Camera>>,
 }
 
 impl Camera {
@@ -36,7 +38,10 @@ impl Camera {
             projection,
             extras: json.extras.clone(),
             #[cfg(feature = "extensions")]
-            extensions: json.extensions.clone(),
+            extensions: json
+                .extensions
+                .as_ref()
+                .map(|ext| Extension::from_json(ext.clone(), None, None)),
         }
     }
 }
@@ -58,7 +63,7 @@ pub struct Orthographic {
 
     /// Extension specific data.
     #[cfg(feature = "extensions")]
-    pub extensions: properties::Extensions,
+    pub extensions: Option<Extension<json::extensions::camera::Orthographic>>,
 
     /// Optional application specific data.
     pub extras: json::Extras,
@@ -74,7 +79,10 @@ impl Orthographic {
             znear: json.znear,
             extras: json.extras.clone(),
             #[cfg(feature = "extensions")]
-            extensions: json.extensions.clone(),
+            extensions: json
+                .extensions
+                .as_ref()
+                .map(|ext| Extension::from_json(ext.clone(), None, None)),
         }
     }
 }
@@ -96,7 +104,7 @@ pub struct Perspective {
 
     /// Extension specific data.
     #[cfg(feature = "extensions")]
-    pub extensions: properties::Extensions,
+    pub extensions: Option<Extension<json::extensions::camera::Perspective>>,
 
     /// Optional application specific data.
     pub extras: json::Extras,
@@ -112,7 +120,10 @@ impl Perspective {
             znear: json.znear,
             extras: json.extras.clone(),
             #[cfg(feature = "extensions")]
-            extensions: json.extensions.clone(),
+            extensions: json
+                .extensions
+                .as_ref()
+                .map(|ext| Extension::from_json(ext.clone(), None, None)),
         }
     }
 }

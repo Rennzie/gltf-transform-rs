@@ -1,5 +1,5 @@
 #[cfg(feature = "extensions")]
-use super::extensions::Extension;
+use super::extension::Extension;
 use super::{accessor::create_accessor_from_json, buffer::Blob};
 use crate::prelude::*;
 use rayon::prelude::*;
@@ -51,7 +51,7 @@ pub struct Root<'a> {
 
     #[cfg(feature = "extensions")]
     /// Extras and extensions.
-    extension: Option<Extension>,
+    extension: Option<Extension<json::extensions::Root>>,
 }
 
 impl Root<'_> {
@@ -68,48 +68,20 @@ impl Root<'_> {
             animations: root_json
                 .animations
                 .par_iter()
-                .map(|animation| Animation::new(animation))
+                .map(Animation::new)
                 .collect(),
             cameras: root_json
                 .cameras
                 .par_iter()
-                .map(|camera| Camera::from_json(camera))
+                .map(Camera::from_json)
                 .collect(),
-            materials: root_json
-                .materials
-                .par_iter()
-                .map(|material| Material::new(material))
-                .collect(),
-            meshes: root_json
-                .meshes
-                .par_iter()
-                .map(|mesh| Mesh::new(mesh))
-                .collect(),
-            nodes: root_json
-                .nodes
-                .par_iter()
-                .map(|node| Node::new(node))
-                .collect(),
-            scenes: root_json
-                .scenes
-                .par_iter()
-                .map(|scene| Scene::new(scene))
-                .collect(),
-            skins: root_json
-                .skins
-                .par_iter()
-                .map(|skin| Skin::new(skin))
-                .collect(),
-            textures: root_json
-                .textures
-                .par_iter()
-                .map(|texture| Texture::new(texture))
-                .collect(),
-            images: root_json
-                .images
-                .par_iter()
-                .map(|image| Image::new(image))
-                .collect(),
+            materials: root_json.materials.par_iter().map(Material::new).collect(),
+            meshes: root_json.meshes.par_iter().map(Mesh::new).collect(),
+            nodes: root_json.nodes.par_iter().map(Node::new).collect(),
+            scenes: root_json.scenes.par_iter().map(Scene::new).collect(),
+            skins: root_json.skins.par_iter().map(Skin::new).collect(),
+            textures: root_json.textures.par_iter().map(Texture::new).collect(),
+            images: root_json.images.par_iter().map(Image::new).collect(),
             extras: root_json.extras,
             #[cfg(feature = "extensions")]
             extension: None,
@@ -130,7 +102,7 @@ impl Root<'_> {
     }
 
     #[cfg(feature = "extensions")]
-    pub fn get_extension(&self) -> Option<&Extension> {
+    pub fn get_extension(&self) -> Option<&Extension<json::extensions::Root>> {
         self.extension.as_ref()
     }
 }

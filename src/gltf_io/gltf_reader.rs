@@ -1,6 +1,6 @@
 use super::glb_reader::GlbReader;
 use super::Result;
-use std::{io, ops};
+use std::io;
 
 /// glTF JSON wrapper plus binary payload.
 #[derive(Clone, Debug)]

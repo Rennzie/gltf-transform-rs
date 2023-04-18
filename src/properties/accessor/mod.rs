@@ -2,8 +2,6 @@ mod element;
 mod generic_accessor;
 
 use super::buffer::Blob;
-#[cfg(feature = "extensions")]
-use super::extension::Extension;
 use crate::properties::traits::{FromJson, ToJson};
 use element::*;
 use generic_accessor::GenericAccessor;
